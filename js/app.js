@@ -97,8 +97,14 @@ function loadExercise(id) {
 
   // Reset summary
   renderSummary(null);
-  const hepCard = document.getElementById('hepCard');
-  if (hepCard) hepCard.style.display = 'none';
+  // Clear HEP pane and badge
+  const hepCont = document.getElementById('hepContainer');
+  if (hepCont) hepCont.innerHTML = '';
+  const hepBadgeEl = document.getElementById('hepBadge');
+  if (hepBadgeEl) hepBadgeEl.style.display = 'none';
+  // Reset clinical card to AI Summary tab
+  document.querySelectorAll('#clinicalCard .tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+  document.querySelectorAll('#clinicalCard .tab-pane').forEach((p, i) => p.classList.toggle('active', i === 0));
   renderRecommendations(ex.recommendations, false);
 }
 
@@ -630,18 +636,16 @@ function renderRecommendations(recs, highlight) {
    HEP PRESCRIPTION RENDERING
    ══════════════════════════════════════════ */
 function renderHEP(drills) {
-  const card      = document.getElementById('hepCard');
   const container = document.getElementById('hepContainer');
   const badge     = document.getElementById('hepBadge');
-  if (!card || !container) return;
+  if (!container) return;
 
   if (!drills || !drills.length) {
-    card.style.display = 'none';
+    if (badge) badge.style.display = 'none';
     return;
   }
 
-  card.style.display = '';
-  if (badge) badge.textContent = drills.length;
+  if (badge) { badge.textContent = drills.length; badge.style.display = 'inline-flex'; }
 
   container.innerHTML = '<div class="hep-drills">' + drills.map((d, idx) => `
     <div class="hep-drill">
