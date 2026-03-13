@@ -236,7 +236,7 @@ function renderSkeleton(ex) {
   if (!svg) return;
   svg.innerHTML = '';
 
-  const sk = ex.skeleton;
+  const sk = ex.skeletonBottom || ex.skeleton;
   const NS = 'http://www.w3.org/2000/svg';
 
   // Defs / background glow
