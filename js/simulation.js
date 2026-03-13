@@ -278,3 +278,5 @@ function estimateGRF(massKg, phaseMultiplier, exerciseMultiplier) {
   const g = 9.81;
   return Math.round(massKg * g * phaseMultiplier * exerciseMultiplier);
 }
+
+function lerp(a, b, t) { return a + (b - a) * t; }

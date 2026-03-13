@@ -256,13 +256,15 @@ function renderSkeleton(ex) {
   svg.appendChild(bgEllipse);
 
   // Muscle overlays
-  for (const m of sk.muscleOverlays) {
+  for (let oi = 0; oi < sk.muscleOverlays.length; oi++) {
+    const m = sk.muscleOverlays[oi];
     const el = doc(NS, m.type);
     if (m.type === 'ellipse') {
       el.setAttribute('cx', m.cx); el.setAttribute('cy', m.cy);
       el.setAttribute('rx', m.rx); el.setAttribute('ry', m.ry);
     }
     el.setAttribute('class', m.cls);
+    el.dataset.overlayIndex = oi;
     svg.appendChild(el);
   }
 
@@ -278,7 +280,8 @@ function renderSkeleton(ex) {
   }
 
   // Joints
-  for (const j of sk.joints) {
+  for (let ji = 0; ji < sk.joints.length; ji++) {
+    const j = sk.joints[ji];
     if (j.head && !j.headOnly) {
       // Head circle outline
       const outline = doc(NS, 'circle');
@@ -287,11 +290,13 @@ function renderSkeleton(ex) {
       outline.setAttribute('fill', 'none');
       outline.setAttribute('stroke', '#3AABFF');
       outline.setAttribute('stroke-width', '2');
+      outline.dataset.jointIndex = ji;
       svg.appendChild(outline);
     }
     const c = doc(NS, 'circle');
     c.setAttribute('cx', j.cx); c.setAttribute('cy', j.cy);
     c.setAttribute('r',  j.head ? '3' : j.r || 5);
+    c.dataset.jointIndex = ji;
     if (j.highlight && !j.warn) {
       c.setAttribute('fill', 'rgba(30,143,225,0.2)');
       c.setAttribute('stroke', '#3AABFF'); c.setAttribute('stroke-width', '2');
@@ -299,6 +304,7 @@ function renderSkeleton(ex) {
       const dot = doc(NS, 'circle');
       dot.setAttribute('cx', j.cx); dot.setAttribute('cy', j.cy); dot.setAttribute('r', '3');
       dot.setAttribute('class', 'joint'); dot.dataset.jointHighlight = '1';
+      dot.dataset.jointIndex = ji;
       svg.appendChild(c);
       svg.appendChild(dot);
       continue;
@@ -308,6 +314,7 @@ function renderSkeleton(ex) {
       const dot = doc(NS, 'circle');
       dot.setAttribute('cx', j.cx); dot.setAttribute('cy', j.cy); dot.setAttribute('r', '3');
       dot.setAttribute('class', 'joint warn'); dot.dataset.jointHighlight = '1';
+      dot.dataset.jointIndex = ji;
       svg.appendChild(c);
       svg.appendChild(dot);
       continue;
@@ -331,16 +338,54 @@ function renderSkeleton(ex) {
 }
 
 function updateSkeletonDepth(phase, depth, hasValgus) {
-  // Animate muscle overlay opacity based on phase
-  const overlays = document.querySelectorAll('#skeletonSvg .muscle-overlay');
-  const intensity = phase === 'concentric' ? 0.9 : phase === 'bottom' ? 0.8 : 0.6 + depth * 0.3;
-  overlays.forEach(o => {
+  const ex  = getExercise(currentExerciseId);
+  const skT = ex.skeletonTop;
+  const skB = ex.skeletonBottom || ex.skeleton;
+
+  if (skT && skB) {
+    // Lerp bones
+    document.querySelectorAll('#skeletonSvg [data-bone-index]').forEach(el => {
+      const i = +el.dataset.boneIndex;
+      const t = skT.bones[i], b = skB.bones[i];
+      if (!t || !b) return;
+      el.setAttribute('x1', lerp(t.x1, b.x1, depth).toFixed(1));
+      el.setAttribute('y1', lerp(t.y1, b.y1, depth).toFixed(1));
+      el.setAttribute('x2', lerp(t.x2, b.x2, depth).toFixed(1));
+      el.setAttribute('y2', lerp(t.y2, b.y2, depth).toFixed(1));
+    });
+
+    // Lerp joints
+    document.querySelectorAll('#skeletonSvg [data-joint-index]').forEach(el => {
+      const i = +el.dataset.jointIndex;
+      const t = skT.joints[i], b = skB.joints[i];
+      if (!t || !b) return;
+      el.setAttribute('cx', lerp(t.cx, b.cx, depth).toFixed(1));
+      el.setAttribute('cy', lerp(t.cy, b.cy, depth).toFixed(1));
+    });
+
+    // Lerp overlays (position + size)
+    document.querySelectorAll('#skeletonSvg [data-overlay-index]').forEach(el => {
+      const i = +el.dataset.overlayIndex;
+      const t = skT.muscleOverlays[i], b = skB.muscleOverlays[i];
+      if (!t || !b) return;
+      if (t.cx !== undefined) {
+        el.setAttribute('cx', lerp(t.cx, b.cx, depth).toFixed(1));
+        el.setAttribute('cy', lerp(t.cy, b.cy, depth).toFixed(1));
+      }
+      if (t.rx !== undefined) {
+        el.setAttribute('rx', lerp(t.rx, b.rx, depth).toFixed(1));
+        el.setAttribute('ry', lerp(t.ry, b.ry, depth).toFixed(1));
+      }
+    });
+  }
+
+  // Muscle overlay animation state
+  document.querySelectorAll('#skeletonSvg .muscle-overlay').forEach(o => {
     o.style.animationPlayState = phase === 'setup' ? 'paused' : 'running';
   });
 
-  // Valgus visual indicator
-  const warnJoints = document.querySelectorAll('#skeletonSvg .joint.warn');
-  warnJoints.forEach(j => {
+  // Valgus indicator
+  document.querySelectorAll('#skeletonSvg .joint.warn').forEach(j => {
     j.style.opacity = hasValgus ? '1' : '0.4';
   });
 }
