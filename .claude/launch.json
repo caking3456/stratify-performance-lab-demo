@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Static Dev Server (serve)",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "require('child_process').spawn('npx.cmd',['serve','.','-l','3000'],{stdio:'inherit',shell:true})"
+      ],
+      "port": 3000
+    }
+  ]
+}

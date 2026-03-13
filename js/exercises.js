@@ -7,7 +7,9 @@
  *  - muscles: primary and stabilizer activation (0–100%)
  *  - joints: names and optimal angle ranges
  *  - phases: biomechanical phase labels
- *  - skeleton: SVG path data for each animation phase
+ *  - skeletonTop:    SVG pose at top/start position (depth = 0)
+ *  - skeletonBottom: SVG pose at bottom/depth position (depth = 1)
+ *    Array lengths MUST match between top and bottom for lerp to work.
  *  - recommendations: evidence-based coaching cues
  *  - forceMultiplier: scales GRF estimate relative to bodyweight
  */
@@ -45,7 +47,6 @@ const EXERCISES = {
       { name: 'Trunk',  optMin: 5,  optMax: 25,  unit: '°', key: 'trunk'  },
     ],
 
-    // Base joint angles at depth (bottom)
     baseAngles: { hip: 76, kneeL: 89, kneeR: 91, ankle: 24, spine: 8, trunk: 14 },
 
     recommendations: [
@@ -72,23 +73,70 @@ const EXERCISES = {
       }
     ],
 
-    // SVG skeleton definition for squat (bottom position)
-    skeleton: {
-      // [x1,y1,x2,y2] bone segments; 'a' = active bone
+    skeletonTop: {
       bones: [
-        { x1:130,y1:90,  x2:130,y2:200, active:false }, // spine
-        { x1:100,y1:200, x2:160,y2:200, active:false }, // pelvis
-        { x1:90, y1:110, x2:170,y2:110, active:false }, // shoulder girdle
-        { x1:130,y1:110, x2:90, y2:150, active:false }, // L upper arm
-        { x1:90, y1:150, x2:70, y2:195, active:false }, // L forearm
-        { x1:130,y1:110, x2:170,y2:150, active:false }, // R upper arm
-        { x1:170,y1:150, x2:190,y2:195, active:false }, // R forearm
-        { x1:100,y1:200, x2:90, y2:277, active:true  }, // L thigh
-        { x1:90, y1:277, x2:100,y2:352, active:true  }, // L shin
-        { x1:100,y1:352, x2:100,y2:380, active:false }, // L foot
-        { x1:160,y1:200, x2:170,y2:277, active:true  }, // R thigh
-        { x1:170,y1:277, x2:160,y2:352, active:true  }, // R shin
-        { x1:160,y1:352, x2:160,y2:380, active:false }, // R foot
+        { x1:130,y1:90,  x2:130,y2:200, active:false },
+        { x1:100,y1:200, x2:160,y2:200, active:false },
+        { x1:90, y1:110, x2:170,y2:110, active:false },
+        { x1:130,y1:110, x2:90, y2:150, active:false },
+        { x1:90, y1:150, x2:70, y2:195, active:false },
+        { x1:130,y1:110, x2:170,y2:150, active:false },
+        { x1:170,y1:150, x2:190,y2:195, active:false },
+        { x1:100,y1:200, x2:100,y2:325, active:true  },
+        { x1:100,y1:325, x2:100,y2:378, active:true  },
+        { x1:100,y1:378, x2:95, y2:398, active:false },
+        { x1:160,y1:200, x2:160,y2:325, active:true  },
+        { x1:160,y1:325, x2:160,y2:378, active:true  },
+        { x1:160,y1:378, x2:165,y2:398, active:false },
+      ],
+      joints: [
+        { cx:130,cy:68,  r:5,  warn:false, head:true  },
+        { cx:130,cy:90,  r:5,  warn:false },
+        { cx:90, cy:110, r:5,  warn:false },
+        { cx:170,cy:110, r:5,  warn:false },
+        { cx:70, cy:155, r:5,  warn:false },
+        { cx:190,cy:155, r:5,  warn:false },
+        { cx:65, cy:200, r:4,  warn:false },
+        { cx:195,cy:200, r:4,  warn:false },
+        { cx:100,cy:200, r:6,  warn:false },
+        { cx:160,cy:200, r:6,  warn:false },
+        { cx:100,cy:325, r:6,  warn:false, highlight:true },
+        { cx:160,cy:325, r:6,  warn:false, highlight:true },
+        { cx:100,cy:378, r:5,  warn:false },
+        { cx:160,cy:378, r:5,  warn:false },
+      ],
+      muscleOverlays: [
+        { type:'ellipse', cls:'muscle-overlay quad',  cx:100,cy:263,rx:16,ry:30 },
+        { type:'ellipse', cls:'muscle-overlay quad',  cx:160,cy:263,rx:16,ry:30 },
+        { type:'ellipse', cls:'muscle-overlay glute', cx:130,cy:210,rx:30,ry:16 },
+        { type:'ellipse', cls:'muscle-overlay core',  cx:130,cy:162,rx:18,ry:25 },
+        { type:'ellipse', cls:'muscle-overlay ham',   cx:100,cy:250,rx:12,ry:24 },
+        { type:'ellipse', cls:'muscle-overlay ham',   cx:160,cy:250,rx:12,ry:24 },
+      ],
+      annotations: [
+        { text:'0°',    x:55,  y:330, cls:'angle-label', warn:false },
+        { text:'0°',    x:163, y:330, cls:'angle-label', warn:false },
+        { text:'Ready', x:60,  y:215, cls:'angle-label', warn:false },
+        { text:'Setup', x:85,  y:148, cls:'angle-label', warn:false, small:true },
+        { text:'',      x:185, y:255, cls:'angle-label', warn:false, small:true },
+      ]
+    },
+
+    skeletonBottom: {
+      bones: [
+        { x1:130,y1:90,  x2:130,y2:200, active:false },
+        { x1:100,y1:200, x2:160,y2:200, active:false },
+        { x1:90, y1:110, x2:170,y2:110, active:false },
+        { x1:130,y1:110, x2:90, y2:150, active:false },
+        { x1:90, y1:150, x2:70, y2:195, active:false },
+        { x1:130,y1:110, x2:170,y2:150, active:false },
+        { x1:170,y1:150, x2:190,y2:195, active:false },
+        { x1:100,y1:200, x2:90, y2:277, active:true  },
+        { x1:90, y1:277, x2:100,y2:352, active:true  },
+        { x1:100,y1:352, x2:100,y2:380, active:false },
+        { x1:160,y1:200, x2:170,y2:277, active:true  },
+        { x1:170,y1:277, x2:160,y2:352, active:true  },
+        { x1:160,y1:352, x2:160,y2:380, active:false },
       ],
       joints: [
         { cx:130,cy:68,  r:5,  warn:false, head:true  },
@@ -181,21 +229,67 @@ const EXERCISES = {
       }
     ],
 
-    skeleton: {
+    skeletonTop: {
       bones: [
-        { x1:140,y1:100, x2:120,y2:200, active:false }, // spine (leaned over)
-        { x1:95, y1:200, x2:145,y2:200, active:false }, // pelvis
-        { x1:100,y1:115, x2:175,y2:110, active:false }, // shoulder girdle
-        { x1:100,y1:115, x2:75, y2:165, active:false }, // L upper arm
-        { x1:75, y1:165, x2:65, y2:220, active:false }, // L forearm
-        { x1:175,y1:110, x2:195,y2:160, active:false }, // R upper arm
-        { x1:195,y1:160, x2:200,y2:215, active:false }, // R forearm
-        { x1:95, y1:200, x2:95, y2:295, active:true  }, // L thigh
-        { x1:95, y1:295, x2:100,y2:370, active:true  }, // L shin
-        { x1:100,y1:370, x2:90, y2:385, active:false }, // L foot
-        { x1:145,y1:200, x2:145,y2:295, active:true  }, // R thigh
-        { x1:145,y1:295, x2:150,y2:370, active:true  }, // R shin
-        { x1:150,y1:370, x2:160,y2:385, active:false }, // R foot
+        { x1:130,y1:90,  x2:130,y2:200, active:false },
+        { x1:100,y1:200, x2:155,y2:200, active:false },
+        { x1:90, y1:108, x2:172,y2:108, active:false },
+        { x1:90, y1:108, x2:75, y2:165, active:false },
+        { x1:75, y1:165, x2:65, y2:222, active:false },
+        { x1:172,y1:108, x2:188,y2:162, active:false },
+        { x1:188,y1:162, x2:198,y2:218, active:false },
+        { x1:100,y1:200, x2:100,y2:308, active:true  },
+        { x1:100,y1:308, x2:105,y2:375, active:true  },
+        { x1:105,y1:375, x2:90, y2:388, active:false },
+        { x1:155,y1:200, x2:155,y2:308, active:true  },
+        { x1:155,y1:308, x2:160,y2:375, active:true  },
+        { x1:160,y1:375, x2:170,y2:388, active:false },
+      ],
+      joints: [
+        { cx:138,cy:72,  r:5,  warn:false, head:true },
+        { cx:130,cy:90,  r:5,  warn:false },
+        { cx:90, cy:108, r:5,  warn:false },
+        { cx:172,cy:108, r:5,  warn:false },
+        { cx:75, cy:167, r:4,  warn:false },
+        { cx:188,cy:162, r:4,  warn:false },
+        { cx:65, cy:224, r:4,  warn:false },
+        { cx:198,cy:220, r:4,  warn:false },
+        { cx:100,cy:200, r:6,  warn:false },
+        { cx:155,cy:200, r:6,  warn:false },
+        { cx:100,cy:308, r:6,  warn:false, highlight:true },
+        { cx:155,cy:308, r:6,  warn:false, highlight:true },
+        { cx:105,cy:375, r:5,  warn:false },
+        { cx:160,cy:375, r:5,  warn:false },
+      ],
+      muscleOverlays: [
+        { type:'ellipse', cls:'muscle-overlay glute', cx:128,cy:210,rx:30,ry:18 },
+        { type:'ellipse', cls:'muscle-overlay ham',   cx:100,cy:255,rx:16,ry:40 },
+        { type:'ellipse', cls:'muscle-overlay ham',   cx:155,cy:255,rx:16,ry:40 },
+        { type:'ellipse', cls:'muscle-overlay back',  cx:130,cy:150,rx:20,ry:30 },
+        { type:'ellipse', cls:'muscle-overlay core',  cx:130,cy:170,rx:15,ry:20 },
+      ],
+      annotations: [
+        { text:'Lockout', x:55,  y:210, cls:'angle-label', warn:false },
+        { text:'Upright', x:75,  y:140, cls:'angle-label', warn:false, small:true },
+        { text:'0° knee', x:62,  y:318, cls:'angle-label', warn:false, small:true },
+      ]
+    },
+
+    skeletonBottom: {
+      bones: [
+        { x1:140,y1:100, x2:120,y2:200, active:false },
+        { x1:95, y1:200, x2:145,y2:200, active:false },
+        { x1:100,y1:115, x2:175,y2:110, active:false },
+        { x1:100,y1:115, x2:75, y2:165, active:false },
+        { x1:75, y1:165, x2:65, y2:220, active:false },
+        { x1:175,y1:110, x2:195,y2:160, active:false },
+        { x1:195,y1:160, x2:200,y2:215, active:false },
+        { x1:95, y1:200, x2:95, y2:295, active:true  },
+        { x1:95, y1:295, x2:100,y2:370, active:true  },
+        { x1:100,y1:370, x2:90, y2:385, active:false },
+        { x1:145,y1:200, x2:145,y2:295, active:true  },
+        { x1:145,y1:295, x2:150,y2:370, active:true  },
+        { x1:150,y1:370, x2:160,y2:385, active:false },
       ],
       joints: [
         { cx:148,cy:80,  r:5,  warn:false, head:true },
@@ -285,7 +379,7 @@ const EXERCISES = {
       }
     ],
 
-    skeleton: {
+    skeletonTop: {
       bones: [
         { x1:125,y1:88,  x2:125,y2:188, active:false },
         { x1:100,y1:188, x2:150,y2:188, active:false },
@@ -294,11 +388,53 @@ const EXERCISES = {
         { x1:65, y1:148, x2:55, y2:195, active:false },
         { x1:162,y1:105, x2:185,y2:148, active:false },
         { x1:185,y1:148, x2:192,y2:195, active:false },
-        { x1:100,y1:188, x2:78, y2:288, active:true  }, // lead thigh
-        { x1:78, y1:288, x2:80, y2:370, active:true  }, // lead shin
+        { x1:100,y1:188, x2:100,y2:308, active:true  },
+        { x1:100,y1:308, x2:100,y2:375, active:true  },
+        { x1:100,y1:375, x2:80, y2:390, active:false },
+        { x1:150,y1:188, x2:150,y2:308, active:true  },
+        { x1:150,y1:308, x2:150,y2:375, active:true  },
+        { x1:150,y1:375, x2:168,y2:385, active:false },
+      ],
+      joints: [
+        { cx:125,cy:68,  r:5, warn:false, head:true },
+        { cx:125,cy:88,  r:5, warn:false },
+        { cx:88, cy:105, r:5, warn:false },
+        { cx:162,cy:105, r:5, warn:false },
+        { cx:65, cy:150, r:4, warn:false },
+        { cx:185,cy:150, r:4, warn:false },
+        { cx:100,cy:188, r:6, warn:false },
+        { cx:150,cy:188, r:6, warn:false },
+        { cx:100,cy:308, r:6, warn:false, highlight:true },
+        { cx:150,cy:308, r:6, warn:false, highlight:true },
+        { cx:100,cy:375, r:5, warn:false },
+        { cx:150,cy:375, r:5, warn:false },
+      ],
+      muscleOverlays: [
+        { type:'ellipse', cls:'muscle-overlay quad',  cx:100,cy:248,rx:16,ry:30 },
+        { type:'ellipse', cls:'muscle-overlay glute', cx:125,cy:200,rx:25,ry:15 },
+        { type:'ellipse', cls:'muscle-overlay ham',   cx:150,cy:248,rx:14,ry:30 },
+        { type:'ellipse', cls:'muscle-overlay core',  cx:125,cy:158,rx:16,ry:22 },
+      ],
+      annotations: [
+        { text:'Ready',   x:45, y:312, cls:'angle-label', warn:false, small:true },
+        { text:'Neutral', x:152,y:275, cls:'angle-label', warn:false, small:true },
+      ]
+    },
+
+    skeletonBottom: {
+      bones: [
+        { x1:125,y1:88,  x2:125,y2:188, active:false },
+        { x1:100,y1:188, x2:150,y2:188, active:false },
+        { x1:88, y1:105, x2:162,y2:105, active:false },
+        { x1:88, y1:105, x2:65, y2:148, active:false },
+        { x1:65, y1:148, x2:55, y2:195, active:false },
+        { x1:162,y1:105, x2:185,y2:148, active:false },
+        { x1:185,y1:148, x2:192,y2:195, active:false },
+        { x1:100,y1:188, x2:78, y2:288, active:true  },
+        { x1:78, y1:288, x2:80, y2:370, active:true  },
         { x1:80, y1:370, x2:60, y2:385, active:false },
-        { x1:150,y1:188, x2:168,y2:268, active:true  }, // trail thigh
-        { x1:168,y1:268, x2:160,y2:350, active:true  }, // trail shin
+        { x1:150,y1:188, x2:168,y2:268, active:true  },
+        { x1:168,y1:268, x2:160,y2:350, active:true  },
         { x1:160,y1:350, x2:175,y2:360, active:false },
       ],
       joints: [
@@ -385,7 +521,49 @@ const EXERCISES = {
       }
     ],
 
-    skeleton: {
+    skeletonTop: {
+      bones: [
+        { x1:130,y1:90,  x2:130,y2:195, active:false },
+        { x1:105,y1:195, x2:155,y2:195, active:false },
+        { x1:90, y1:107, x2:170,y2:107, active:false },
+        { x1:90, y1:107, x2:75, y2:162, active:false },
+        { x1:75, y1:162, x2:70, y2:218, active:false },
+        { x1:170,y1:107, x2:185,y2:160, active:false },
+        { x1:185,y1:160, x2:188,y2:215, active:false },
+        { x1:105,y1:195, x2:105,y2:308, active:true  },
+        { x1:105,y1:308, x2:105,y2:378, active:true  },
+        { x1:105,y1:378, x2:90, y2:392, active:false },
+        { x1:155,y1:195, x2:155,y2:308, active:true  },
+        { x1:155,y1:308, x2:155,y2:378, active:true  },
+        { x1:155,y1:378, x2:165,y2:392, active:false },
+      ],
+      joints: [
+        { cx:130,cy:72,  r:5, warn:false, head:true },
+        { cx:130,cy:90,  r:5, warn:false },
+        { cx:170,cy:107, r:5, warn:false },
+        { cx:90, cy:107, r:5, warn:false },
+        { cx:185,cy:162, r:4, warn:false },
+        { cx:75, cy:164, r:4, warn:false },
+        { cx:105,cy:195, r:6, warn:false },
+        { cx:155,cy:195, r:6, warn:false },
+        { cx:105,cy:308, r:5, warn:false, highlight:true },
+        { cx:155,cy:308, r:5, warn:false, highlight:true },
+        { cx:105,cy:378, r:5, warn:false },
+        { cx:155,cy:378, r:5, warn:false },
+      ],
+      muscleOverlays: [
+        { type:'ellipse', cls:'muscle-overlay ham',   cx:105,cy:252,rx:16,ry:40 },
+        { type:'ellipse', cls:'muscle-overlay ham',   cx:155,cy:252,rx:16,ry:40 },
+        { type:'ellipse', cls:'muscle-overlay glute', cx:130,cy:206,rx:28,ry:18 },
+        { type:'ellipse', cls:'muscle-overlay back',  cx:130,cy:148,rx:18,ry:32 },
+      ],
+      annotations: [
+        { text:'Upright',  x:62, y:205, cls:'angle-label', warn:false, small:true },
+        { text:'Ready',    x:95, y:142, cls:'angle-label', warn:false, small:true },
+      ]
+    },
+
+    skeletonBottom: {
       bones: [
         { x1:160,y1:100, x2:130,y2:195, active:false },
         { x1:105,y1:195, x2:155,y2:195, active:false },
@@ -480,24 +658,24 @@ const EXERCISES = {
         priority: 'low',
         icon: '✓',
         title: 'Elbow Path Looks Optimal',
-        body: '45–60° elbow flare angle reduces shoulder impingement risk vs. 90° flare. Current elbow path appears efficient. Continue.',
+        body: '45-60 degree elbow flare angle reduces shoulder impingement risk vs. 90 degree flare. Current elbow path appears efficient. Continue.',
         evidence: ''
       }
     ],
 
-    skeleton: {
+    skeletonTop: {
       bones: [
-        { x1:68, y1:170, x2:192,y2:180, active:false }, // body (horizontal)
-        { x1:68, y1:170, x2:80, y2:220, active:false }, // L thigh
-        { x1:80, y1:220, x2:85, y2:270, active:false }, // L shin
-        { x1:80, y1:270, x2:60, y2:280, active:false }, // L foot
-        { x1:192,y1:180, x2:195,y2:230, active:false }, // R thigh
-        { x1:195,y1:230, x2:200,y2:280, active:false }, // R shin
-        { x1:200,y1:280, x2:215,y2:285, active:false }, // R foot
-        { x1:155,y1:175, x2:140,y2:230, active:true  }, // L upper arm
-        { x1:140,y1:230, x2:130,y2:280, active:true  }, // L forearm
-        { x1:155,y1:175, x2:170,y2:230, active:true  }, // R upper arm
-        { x1:170,y1:230, x2:175,y2:280, active:true  }, // R forearm
+        { x1:68, y1:170, x2:192,y2:180, active:false },
+        { x1:68, y1:170, x2:80, y2:220, active:false },
+        { x1:80, y1:220, x2:85, y2:270, active:false },
+        { x1:80, y1:270, x2:60, y2:280, active:false },
+        { x1:192,y1:180, x2:195,y2:230, active:false },
+        { x1:195,y1:230, x2:200,y2:280, active:false },
+        { x1:200,y1:280, x2:215,y2:285, active:false },
+        { x1:155,y1:175, x2:140,y2:230, active:true  },
+        { x1:140,y1:230, x2:130,y2:280, active:true  },
+        { x1:155,y1:175, x2:170,y2:230, active:true  },
+        { x1:170,y1:230, x2:175,y2:280, active:true  },
       ],
       joints: [
         { cx:155,cy:160, r:14, warn:false, head:true, headOnly:true },
@@ -521,8 +699,49 @@ const EXERCISES = {
         { type:'ellipse', cls:'muscle-overlay core',     cx:128,cy:175,rx:30,ry:8  },
       ],
       annotations: [
-        { text:'90° L', x:112,y:238, cls:'angle-label', warn:false, small:true },
-        { text:'90° R', x:174,y:238, cls:'angle-label', warn:false, small:true },
+        { text:'90 L', x:112,y:238, cls:'angle-label', warn:false, small:true },
+        { text:'90 R', x:174,y:238, cls:'angle-label', warn:false, small:true },
+      ]
+    },
+
+    skeletonBottom: {
+      bones: [
+        { x1:68, y1:242, x2:192,y2:250, active:false },
+        { x1:68, y1:242, x2:78, y2:272, active:false },
+        { x1:78, y1:272, x2:82, y2:310, active:false },
+        { x1:82, y1:310, x2:60, y2:318, active:false },
+        { x1:192,y1:250, x2:195,y2:278, active:false },
+        { x1:195,y1:278, x2:198,y2:315, active:false },
+        { x1:198,y1:315, x2:215,y2:320, active:false },
+        { x1:155,y1:245, x2:125,y2:248, active:true  },
+        { x1:125,y1:248, x2:130,y2:280, active:true  },
+        { x1:155,y1:245, x2:182,y2:248, active:true  },
+        { x1:182,y1:248, x2:175,y2:280, active:true  },
+      ],
+      joints: [
+        { cx:155,cy:230, r:14, warn:false, head:true, headOnly:true },
+        { cx:155,cy:245, r:5,  warn:false },
+        { cx:68, cy:242, r:5,  warn:false },
+        { cx:192,cy:250, r:5,  warn:false },
+        { cx:78, cy:272, r:4,  warn:false },
+        { cx:195,cy:278, r:4,  warn:false },
+        { cx:82, cy:310, r:4,  warn:false },
+        { cx:198,cy:315, r:4,  warn:false },
+        { cx:125,cy:248, r:6,  warn:false, highlight:true },
+        { cx:182,cy:248, r:6,  warn:false, highlight:true },
+        { cx:130,cy:280, r:4,  warn:false },
+        { cx:175,cy:280, r:4,  warn:false },
+      ],
+      muscleOverlays: [
+        { type:'ellipse', cls:'muscle-overlay chest',    cx:128,cy:244,rx:32,ry:8  },
+        { type:'ellipse', cls:'muscle-overlay tricep',   cx:135,cy:264,rx:10,ry:18 },
+        { type:'ellipse', cls:'muscle-overlay tricep',   cx:178,cy:264,rx:10,ry:18 },
+        { type:'ellipse', cls:'muscle-overlay shoulder', cx:155,cy:248,rx:20,ry:8  },
+        { type:'ellipse', cls:'muscle-overlay core',     cx:128,cy:245,rx:28,ry:6  },
+      ],
+      annotations: [
+        { text:'90 L', x:98, y:254, cls:'angle-label', warn:false, small:true },
+        { text:'90 R', x:185,y:254, cls:'angle-label', warn:false, small:true },
       ]
     }
   },
@@ -584,19 +803,19 @@ const EXERCISES = {
       }
     ],
 
-    skeleton: {
+    skeletonTop: {
       bones: [
-        { x1:130,y1:88,  x2:130,y2:240, active:false }, // spine
-        { x1:100,y1:240, x2:160,y2:240, active:false }, // pelvis
-        { x1:88, y1:105, x2:172,y2:105, active:false }, // shoulder girdle
-        { x1:100,y1:240, x2:102,y2:320, active:false }, // L thigh
-        { x1:102,y1:320, x2:104,y2:390, active:false }, // L shin
-        { x1:160,y1:240, x2:158,y2:320, active:false }, // R thigh
-        { x1:158,y1:320, x2:156,y2:390, active:false }, // R shin
-        { x1:88, y1:105, x2:62, y2:68,  active:true  }, // L upper arm (overhead)
-        { x1:62, y1:68,  x2:60, y2:35,  active:true  }, // L forearm (up)
-        { x1:172,y1:105, x2:198,y2:68,  active:true  }, // R upper arm (overhead)
-        { x1:198,y1:68,  x2:200,y2:35,  active:true  }, // R forearm (up)
+        { x1:130,y1:88,  x2:130,y2:240, active:false },
+        { x1:100,y1:240, x2:160,y2:240, active:false },
+        { x1:88, y1:105, x2:172,y2:105, active:false },
+        { x1:100,y1:240, x2:102,y2:320, active:false },
+        { x1:102,y1:320, x2:104,y2:390, active:false },
+        { x1:160,y1:240, x2:158,y2:320, active:false },
+        { x1:158,y1:320, x2:156,y2:390, active:false },
+        { x1:88, y1:105, x2:62, y2:68,  active:true  },
+        { x1:62, y1:68,  x2:60, y2:35,  active:true  },
+        { x1:172,y1:105, x2:198,y2:68,  active:true  },
+        { x1:198,y1:68,  x2:200,y2:35,  active:true  },
       ],
       joints: [
         { cx:130,cy:68,  r:5, warn:false, head:true },
@@ -620,8 +839,49 @@ const EXERCISES = {
         { type:'ellipse', cls:'muscle-overlay core',     cx:130, cy:175,rx:18,ry:28 },
       ],
       annotations: [
-        { text:'172°', x:42, y:88, cls:'angle-label', warn:false, small:true },
-        { text:'6° lumbar', x:100, y:178, cls:'angle-label', warn:false, small:true },
+        { text:'172 deg', x:42, y:88, cls:'angle-label', warn:false, small:true },
+        { text:'6 deg lumbar', x:100, y:178, cls:'angle-label', warn:false, small:true },
+      ]
+    },
+
+    skeletonBottom: {
+      bones: [
+        { x1:130,y1:88,  x2:130,y2:240, active:false },
+        { x1:100,y1:240, x2:160,y2:240, active:false },
+        { x1:88, y1:105, x2:172,y2:105, active:false },
+        { x1:100,y1:240, x2:102,y2:320, active:false },
+        { x1:102,y1:320, x2:104,y2:390, active:false },
+        { x1:160,y1:240, x2:158,y2:320, active:false },
+        { x1:158,y1:320, x2:156,y2:390, active:false },
+        { x1:88, y1:105, x2:75, y2:152, active:true  },
+        { x1:75, y1:152, x2:78, y2:108, active:true  },
+        { x1:172,y1:105, x2:185,y2:152, active:true  },
+        { x1:185,y1:152, x2:182,y2:108, active:true  },
+      ],
+      joints: [
+        { cx:130,cy:68,  r:5, warn:false, head:true },
+        { cx:130,cy:88,  r:5, warn:false },
+        { cx:88, cy:105, r:6, warn:false, highlight:true },
+        { cx:172,cy:105, r:6, warn:false, highlight:true },
+        { cx:75, cy:152, r:5, warn:false },
+        { cx:185,cy:152, r:5, warn:false },
+        { cx:78, cy:108, r:4, warn:false },
+        { cx:182,cy:108, r:4, warn:false },
+        { cx:100,cy:240, r:5, warn:false },
+        { cx:160,cy:240, r:5, warn:false },
+        { cx:102,cy:320, r:4, warn:false },
+        { cx:158,cy:320, r:4, warn:false },
+      ],
+      muscleOverlays: [
+        { type:'ellipse', cls:'muscle-overlay shoulder', cx:82,  cy:128,rx:18,ry:14 },
+        { type:'ellipse', cls:'muscle-overlay shoulder', cx:178, cy:128,rx:18,ry:14 },
+        { type:'ellipse', cls:'muscle-overlay tricep',   cx:76,  cy:130,rx:8, ry:18 },
+        { type:'ellipse', cls:'muscle-overlay tricep',   cx:184, cy:130,rx:8, ry:18 },
+        { type:'ellipse', cls:'muscle-overlay core',     cx:130, cy:175,rx:18,ry:28 },
+      ],
+      annotations: [
+        { text:'90 deg', x:42, y:120, cls:'angle-label', warn:false, small:true },
+        { text:'6 deg lumbar', x:100, y:178, cls:'angle-label', warn:false, small:true },
       ]
     }
   }
