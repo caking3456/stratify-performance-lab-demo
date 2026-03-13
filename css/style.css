@@ -671,3 +671,64 @@ select { font-family: inherit; }
 @media (max-width: 500px) {
   .grid-3 { grid-template-columns: 1fr; }
 }
+
+/* ── HEP Prescription ──────────────────────────────────────── */
+.hep-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--blue); color: var(--white);
+  font-size: 10px; font-weight: 700;
+  margin-left: 6px; vertical-align: middle;
+}
+.hep-drills { display: flex; flex-direction: column; gap: 10px; }
+.hep-drill {
+  display: flex; gap: 13px; align-items: flex-start;
+  padding: 13px 14px;
+  background: rgba(30,143,225,0.04);
+  border: 1px solid rgba(30,143,225,0.13);
+  border-radius: 7px;
+  transition: border-color 0.2s;
+}
+.hep-drill:hover { border-color: rgba(30,143,225,0.28); }
+.hep-drill-num {
+  flex-shrink: 0; width: 23px; height: 23px; border-radius: 50%;
+  background: var(--blue-dark); color: var(--blue-light);
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 1px;
+}
+.hep-drill-body { flex: 1; min-width: 0; }
+.hep-drill-name {
+  font-size: 13px; font-weight: 600; color: var(--white);
+  margin-bottom: 2px;
+}
+.hep-drill-muscle {
+  font-size: 10px; color: var(--blue-light);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 7px;
+}
+.hep-drill-rx {
+  display: inline-block;
+  font-size: 11px; font-weight: 600; color: var(--success);
+  background: rgba(34,212,160,0.1);
+  border: 1px solid rgba(34,212,160,0.22);
+  border-radius: 4px; padding: 1px 8px;
+  margin-bottom: 8px;
+}
+.hep-drill-cue {
+  font-size: 11px; color: var(--text-muted);
+  line-height: 1.6; margin-bottom: 5px;
+}
+.hep-drill-evidence {
+  font-size: 10px; color: var(--blue);
+  font-style: italic;
+}
+.hep-disclaimer {
+  margin-top: 15px; padding: 10px 14px;
+  background: rgba(245,158,11,0.07);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 6px;
+  font-size: 10px; color: #c8954a;
+  line-height: 1.6;
+}
+.hep-disclaimer strong { color: var(--warn); }

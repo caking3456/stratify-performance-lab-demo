@@ -97,6 +97,8 @@ function loadExercise(id) {
 
   // Reset summary
   renderSummary(null);
+  const hepCard = document.getElementById('hepCard');
+  if (hepCard) hepCard.style.display = 'none';
   renderRecommendations(ex.recommendations, false);
 }
 
@@ -158,6 +160,7 @@ function stopAnalysis() {
     renderSummary(summary);
     renderRecommendations(summary.recommendations, true);
     renderForceChart(summary.repForces, sessionConfig.targetReps);
+    renderHEP(prescribeHEP(currentExerciseId, summary));
     sessionConfig.setNumber++;
     setEl('sessionSetNum', sessionConfig.setNumber);
   }
@@ -621,6 +624,37 @@ function renderRecommendations(recs, highlight) {
       </div>
     </div>
   `).join('');
+}
+
+/* ══════════════════════════════════════════
+   HEP PRESCRIPTION RENDERING
+   ══════════════════════════════════════════ */
+function renderHEP(drills) {
+  const card      = document.getElementById('hepCard');
+  const container = document.getElementById('hepContainer');
+  const badge     = document.getElementById('hepBadge');
+  if (!card || !container) return;
+
+  if (!drills || !drills.length) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = '';
+  if (badge) badge.textContent = drills.length;
+
+  container.innerHTML = '<div class="hep-drills">' + drills.map((d, idx) => `
+    <div class="hep-drill">
+      <div class="hep-drill-num">${idx + 1}</div>
+      <div class="hep-drill-body">
+        <div class="hep-drill-name">${d.name}</div>
+        <div class="hep-drill-muscle">${d.targetMuscle}</div>
+        <div class="hep-drill-rx">${d.sets} × ${d.reps}${d.side ? ' &mdash; ' + d.side : ''}</div>
+        <div class="hep-drill-cue">${d.cue}</div>
+        ${d.evidence ? `<div class="hep-drill-evidence">${d.evidence}</div>` : ''}
+      </div>
+    </div>
+  `).join('') + '</div>';
 }
 
 /* ══════════════════════════════════════════

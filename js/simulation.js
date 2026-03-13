@@ -249,6 +249,7 @@ class BiomechanicsSimulation {
       grade,
       summaryText,
       recommendations: this.exercise.recommendations,
+      hasValgus:        this._hasValgus,
     };
   }
 
