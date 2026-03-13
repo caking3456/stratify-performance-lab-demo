@@ -343,6 +343,20 @@
           <div class="recs" id="recsContainer"></div>
         </div>
 
+        <!-- HEP PRESCRIPTION -->
+        <div class="card" id="hepCard" style="display:none">
+          <div class="card-header">
+            <span class="card-title">Prescribed HEP <span class="hep-badge" id="hepBadge">0</span></span>
+            <span class="badge warn" style="font-size:9px;">EDUCATIONAL ONLY</span>
+          </div>
+          <div id="hepContainer"></div>
+          <div class="hep-disclaimer">
+            <strong>&#9888; Disclaimer:</strong> These AI-generated corrective exercise suggestions are for
+            educational purposes only and do not constitute medical advice, diagnosis, or treatment.
+            Always consult a licensed physical therapist or physician before beginning any exercise program.
+          </div>
+        </div>
+
       </div><!-- /right col -->
     </div><!-- /grid-main -->
 
@@ -366,6 +380,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- SCRIPTS — order matters: exercises → simulation → app -->
+<script src="js/hep.js"></script>
 <script src="js/exercises.js"></script>
 <script src="js/simulation.js"></script>
 <script src="js/app.js"></script>
