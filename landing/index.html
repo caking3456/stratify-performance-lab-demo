@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stratify Performance Lab — Know Your Movement</title>
+<meta name="description" content="AI-assisted biomechanics analysis. See exactly how you move, where you're losing force, and what to fix. Built by a Doctor of Physical Therapy.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #080C12;
+  --bg2:        #0D1420;
+  --bg3:        #111928;
+  --blue:       #1E8FE1;
+  --blue-lt:    #3AABFF;
+  --blue-dim:   rgba(30,143,225,0.12);
+  --green:      #22D4A0;
+  --warn:       #F59E0B;
+  --text:       #E8EDF5;
+  --muted:      #6B7894;
+  --border:     rgba(255,255,255,0.07);
+  --border-b:   rgba(255,255,255,0.12);
+  --font-head:  'Barlow Condensed', sans-serif;
+  --font-body:  'Barlow', sans-serif;
+  --font-mono:  'JetBrains Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  height: 64px;
+  background: rgba(8,12,18,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: var(--font-head);
+  font-size: 18px; font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.nav-logo span { color: var(--blue-lt); }
+.nav-pill {
+  font-size: 10px; font-weight: 600; font-family: var(--font-mono);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--green);
+  border: 1px solid rgba(34,212,160,0.3);
+  padding: 3px 10px; border-radius: 20px;
+  margin-left: 12px;
+}
+.nav-right { display: flex; align-items: center; gap: 24px; }
+.nav-link {
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  text-decoration: none; letter-spacing: 0.02em;
+  transition: color .2s;
+}
+.nav-link:hover { color: var(--text); }
+.btn-nav {
+  font-family: var(--font-head); font-size: 14px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--blue); color: #fff;
+  border: none; border-radius: 4px;
+  padding: 9px 22px; cursor: pointer;
+  text-decoration: none;
+  transition: background .2s, transform .1s;
+}
+.btn-nav:hover { background: var(--blue-lt); transform: translateY(-1px); }
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 120px 40px 80px;
+  overflow: hidden;
+}
+
+/* Grid bg */
+.hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(30,143,225,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,143,225,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 70% at 60% 40%, black 20%, transparent 75%);
+}
+
+.hero-glow {
+  position: absolute;
+  width: 700px; height: 700px;
+  background: radial-gradient(ellipse, rgba(30,143,225,0.12) 0%, transparent 65%);
+  top: -100px; right: -100px;
+  pointer-events: none;
+}
+.hero-glow2 {
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(ellipse, rgba(34,212,160,0.06) 0%, transparent 65%);
+  bottom: 0; left: 30%;
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative; z-index: 1;
+  max-width: 1200px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+}
+
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px;
+}
+.eyebrow-line {
+  width: 32px; height: 1px; background: var(--blue);
+}
+.eyebrow-text {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--blue-lt);
+}
+
+.hero-title {
+  font-family: var(--font-head);
+  font-size: clamp(52px, 7vw, 82px);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.hero-title em { font-style: normal; color: var(--blue-lt); }
+.hero-title .line-accent {
+  display: block;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.25);
+  color: transparent;
+}
+
+.hero-sub {
+  font-size: 17px; font-weight: 400; color: var(--muted);
+  max-width: 440px; line-height: 1.65; margin-bottom: 36px;
+}
+.hero-sub strong { color: var(--text); font-weight: 600; }
+
+.hero-cta {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.btn-primary {
+  font-family: var(--font-head); font-size: 16px; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  background: var(--blue); color: #fff;
+  border: none; border-radius: 4px;
+  padding: 16px 36px; cursor: pointer;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
+  transition: all .2s;
+  position: relative; overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform .4s;
+}
+.btn-primary:hover::after { transform: translateX(100%); }
+.btn-primary:hover { background: var(--blue-lt); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(30,143,225,0.35); }
+
+.btn-ghost {
+  font-family: var(--font-head); font-size: 15px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text);
+  border: 1px solid var(--border-b); border-radius: 4px;
+  padding: 15px 28px; cursor: pointer;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  transition: all .2s; background: transparent;
+}
+.btn-ghost:hover { border-color: var(--blue); color: var(--blue-lt); }
+
+.hero-trust {
+  margin-top: 32px; display: flex; align-items: center; gap: 8px;
+}
+.trust-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.trust-text { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+.trust-text strong { color: var(--text); }
+
+/* Hero dashboard mockup */
+.hero-visual {
+  position: relative;
+}
+.dashboard-mock {
+  background: var(--bg2);
+  border: 1px solid var(--border-b);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: floatY 5s ease-in-out infinite;
+}
+@keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+.mock-bar {
+  height: 36px; background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 14px; gap: 8px;
+}
+.mock-dot { width: 9px; height: 9px; border-radius: 50%; }
+.mock-title {
+  font-family: var(--font-mono); font-size: 10px; color: var(--muted);
+  letter-spacing: 0.08em; margin-left: auto; margin-right: auto;
+}
+.mock-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.mock-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.mock-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 12px;
+}
+.mock-card-label { font-size: 9px; color: var(--muted); font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+.mock-card-val { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: var(--text); }
+.mock-card-val.blue { color: var(--blue-lt); }
+.mock-card-val.green { color: var(--green); }
+.mock-card-val.warn { color: var(--warn); }
+.mock-card-sub { font-size: 9px; color: var(--muted); margin-top: 2px; }
+
+.mock-main { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mock-skeleton-box {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; overflow: hidden;
+}
+.mock-sk-label {
+  font-size: 9px; color: var(--muted); font-family: var(--font-mono);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
+}
+.mock-sk-body { padding: 12px 10px; display: flex; justify-content: center; }
+
+/* Tiny skeleton SVG */
+.mock-muscles { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+.muscle-mini-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.muscle-mini-name { font-size: 9px; color: var(--muted); width: 64px; flex-shrink: 0; font-family: var(--font-mono); }
+.muscle-mini-bar-bg { flex: 1; height: 5px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.muscle-mini-fill { height: 100%; border-radius: 2px; }
+.muscle-mini-pct { font-size: 9px; color: var(--muted); font-family: var(--font-mono); width: 24px; text-align: right; }
+
+/* Scan line on mock */
+.mock-scan {
+  position: absolute; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(30,143,225,0.5), transparent);
+  animation: scan 3s linear infinite;
+  pointer-events: none;
+}
+@keyframes scan { 0%{top:36px;opacity:0} 5%{opacity:1} 95%{opacity:1} 100%{top:100%;opacity:0} }
+
+.mock-badge {
+  position: absolute; top: -10px; right: -10px;
+  background: var(--green); color: #04342C;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(34,212,160,0.4);
+}
+
+/* ── SECTION SHARED ── */
+section { position: relative; z-index: 1; }
+.section-inner { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+.section-label {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* ── TICKER STRIP ── */
+.ticker {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  overflow: hidden; padding: 12px 0;
+  margin: 0; white-space: nowrap;
+}
+.ticker-inner {
+  display: inline-flex; gap: 48px;
+  animation: tick 30s linear infinite;
+}
+@keyframes tick { to { transform: translateX(-50%); } }
+.ticker-item {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase;
+  display: flex; align-items: center; gap: 12px;
+}
+.ticker-item::before { content: '·'; color: var(--blue); font-size: 18px; }
+
+/* ── HOW IT WORKS ── */
+.how { padding: 100px 0; }
+.how-header { text-align: center; margin-bottom: 64px; }
+.section-title {
+  font-family: var(--font-head); font-size: clamp(36px, 5vw, 52px);
+  font-weight: 900; letter-spacing: 0.02em; text-transform: uppercase;
+  line-height: 1; margin-bottom: 16px;
+}
+.section-title em { font-style: normal; color: var(--blue-lt); }
+.section-sub { font-size: 16px; color: var(--muted); max-width: 480px; margin: 0 auto; }
+
+.steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+.step {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 40px 32px;
+  position: relative; overflow: hidden;
+  transition: border-color .2s;
+}
+.step:hover { border-color: var(--border-b); }
+.step:first-child { border-radius: 10px 0 0 10px; }
+.step:last-child  { border-radius: 0 10px 10px 0; }
+.step-num {
+  font-family: var(--font-head); font-size: 72px; font-weight: 900;
+  color: rgba(30,143,225,0.08); position: absolute; top: 16px; right: 20px;
+  line-height: 1; letter-spacing: -0.04em; pointer-events: none;
+}
+.step-icon {
+  width: 44px; height: 44px;
+  background: var(--blue-dim); border: 1px solid rgba(30,143,225,0.2);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px; font-size: 20px;
+}
+.step-title {
+  font-family: var(--font-head); font-size: 20px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px;
+}
+.step-body { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.step-tag {
+  display: inline-block; margin-top: 16px;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--blue-lt);
+  border: 1px solid rgba(30,143,225,0.25); padding: 3px 10px; border-radius: 20px;
+}
+
+/* ── FEATURES ── */
+.features { padding: 100px 0; background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.features-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; background: var(--border); border-radius: 10px; overflow: hidden; margin-top: 60px; }
+.feat {
+  background: var(--bg2); padding: 36px 32px;
+  transition: background .2s;
+}
+.feat:hover { background: var(--bg3); }
+.feat-icon { font-size: 24px; margin-bottom: 14px; }
+.feat-title {
+  font-family: var(--font-head); font-size: 18px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;
+}
+.feat-body { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.feat-evidence {
+  margin-top: 10px; font-family: var(--font-mono); font-size: 10px;
+  color: rgba(30,143,225,0.6); letter-spacing: 0.04em;
+}
+
+/* ── CREDIBILITY ── */
+.cred { padding: 100px 0; }
+.cred-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.cred-label { color: var(--blue-lt); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; }
+.cred-title { font-family: var(--font-head); font-size: 42px; font-weight: 900; text-transform: uppercase; line-height: 1; margin-bottom: 24px; }
+.cred-title em { font-style: normal; color: var(--blue-lt); }
+.cred-body { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
+.cred-certs { display: flex; flex-direction: column; gap: 10px; }
+.cert {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 16px;
+}
+.cert-check { color: var(--green); font-size: 14px; flex-shrink: 0; }
+.cert-text { font-size: 13px; font-weight: 500; }
+.cert-sub { font-size: 11px; color: var(--muted); margin-top: 1px; font-family: var(--font-mono); }
+
+/* Right side: stat tiles */
+.cred-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat-tile {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 24px 20px;
+  position: relative; overflow: hidden;
+}
+.stat-tile::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.stat-tile.blue::before  { background: var(--blue); }
+.stat-tile.green::before { background: var(--green); }
+.stat-tile.warn::before  { background: var(--warn); }
+.stat-tile.white::before { background: rgba(255,255,255,0.3); }
+.stat-tile-num {
+  font-family: var(--font-head); font-size: 42px; font-weight: 900;
+  line-height: 1; margin-bottom: 6px;
+}
+.stat-tile.blue .stat-tile-num  { color: var(--blue-lt); }
+.stat-tile.green .stat-tile-num { color: var(--green); }
+.stat-tile.warn .stat-tile-num  { color: var(--warn); }
+.stat-tile-label { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.stat-tile-sub { font-family: var(--font-mono); font-size: 9px; color: var(--muted); margin-top: 6px; opacity: 0.6; }
+
+/* ── PRICING ── */
+.pricing { padding: 100px 0; background: var(--bg2); border-top: 1px solid var(--border); }
+.pricing-header { text-align: center; margin-bottom: 60px; }
+.pricing-toggle {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px; margin-top: 24px;
+}
+.toggle-btn {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; cursor: pointer;
+  padding: 8px 20px; border-radius: 5px; border: none; background: none;
+  color: var(--muted); transition: all .2s;
+}
+.toggle-btn.active { background: var(--blue); color: #fff; }
+.save-badge {
+  font-size: 10px; font-family: var(--font-mono); letter-spacing: 0.06em;
+  background: rgba(34,212,160,0.12); color: var(--green);
+  border: 1px solid rgba(34,212,160,0.25); padding: 2px 8px; border-radius: 20px;
+}
+
+.plans { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.plan {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 36px 28px; position: relative;
+  transition: border-color .2s, transform .2s;
+}
+.plan:hover { border-color: var(--border-b); transform: translateY(-4px); }
+.plan.featured {
+  border-color: var(--blue);
+  background: linear-gradient(160deg, rgba(30,143,225,0.08) 0%, var(--bg3) 60%);
+  transform: scale(1.02);
+}
+.plan.featured:hover { transform: scale(1.02) translateY(-4px); }
+.plan-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--blue); color: #fff;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 4px 14px; border-radius: 20px;
+  white-space: nowrap;
+}
+.plan-name {
+  font-family: var(--font-head); font-size: 14px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 16px;
+}
+.plan-price {
+  font-family: var(--font-head); font-size: 56px; font-weight: 900;
+  line-height: 1; margin-bottom: 4px; letter-spacing: -0.02em;
+}
+.plan-price sup { font-size: 24px; vertical-align: top; margin-top: 10px; display: inline-block; }
+.plan-period { font-size: 12px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 28px; }
+.plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+.plan-features li { font-size: 13px; color: var(--muted); display: flex; align-items: flex-start; gap: 8px; }
+.plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+.plan-features li.dim { opacity: 0.4; }
+.plan-features li.dim::before { content: '—'; color: var(--muted); }
+.btn-plan {
+  display: block; width: 100%; text-align: center;
+  font-family: var(--font-head); font-size: 14px; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 14px; border-radius: 5px; cursor: pointer;
+  text-decoration: none; border: none;
+  transition: all .2s;
+}
+.btn-plan.solid { background: var(--blue); color: #fff; }
+.btn-plan.solid:hover { background: var(--blue-lt); }
+.btn-plan.outline { background: transparent; color: var(--text); border: 1px solid var(--border-b); }
+.btn-plan.outline:hover { border-color: var(--blue); color: var(--blue-lt); }
+
+.pricing-note { text-align: center; margin-top: 24px; font-size: 12px; color: var(--muted); font-family: var(--font-mono); letter-spacing: 0.04em; }
+
+/* ── FAQ ── */
+.faq { padding: 100px 0; }
+.faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 60px; }
+.faq-item {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 28px;
+}
+.faq-q { font-family: var(--font-head); font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; }
+.faq-a { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+/* ── CTA FINAL ── */
+.cta-final {
+  padding: 120px 40px;
+  text-align: center; position: relative; overflow: hidden;
+  border-top: 1px solid var(--border);
+}
+.cta-final::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(30,143,225,0.1) 0%, transparent 65%);
+}
+.cta-final-title {
+  font-family: var(--font-head); font-size: clamp(48px, 7vw, 80px);
+  font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; line-height: 0.92;
+  margin-bottom: 20px; position: relative;
+}
+.cta-final-title em { font-style: normal; color: var(--blue-lt); }
+.cta-final-sub { font-size: 17px; color: var(--muted); margin-bottom: 40px; position: relative; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: gap;
+  gap: 20px;
+}
+.footer-logo { font-family: var(--font-head); font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+.footer-logo span { color: var(--blue-lt); }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 12px; color: var(--muted); text-decoration: none; font-family: var(--font-mono); letter-spacing: 0.04em; }
+.footer-links a:hover { color: var(--text); }
+.footer-copy { font-size: 11px; color: var(--muted); font-family: var(--font-mono); letter-spacing: 0.04em; }
+
+/* ── EMAIL CAPTURE ── */
+.email-form { display: flex; gap: 0; max-width: 420px; margin: 0 auto; position: relative; }
+.email-input {
+  flex: 1; background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-b); border-right: none;
+  border-radius: 4px 0 0 4px; padding: 16px 20px;
+  font-family: var(--font-body); font-size: 14px; color: var(--text);
+  outline: none;
+}
+.email-input:focus { border-color: var(--blue); }
+.email-input::placeholder { color: var(--muted); }
+.email-btn {
+  font-family: var(--font-head); font-size: 14px; font-weight: 800;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--blue); color: #fff; border: none;
+  padding: 16px 24px; cursor: pointer; border-radius: 0 4px 4px 0;
+  transition: background .2s; white-space: nowrap;
+}
+.email-btn:hover { background: var(--blue-lt); }
+
+/* ── FADE IN ANIMATION ── */
+.fade-up { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  nav { padding: 0 20px; }
+  .hero { padding: 100px 20px 60px; }
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-visual { display: none; }
+  .section-inner { padding: 0 20px; }
+  .steps { grid-template-columns: 1fr; gap: 12px; }
+  .step:first-child, .step:last-child { border-radius: 10px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .cred-inner { grid-template-columns: 1fr; }
+  .plans { grid-template-columns: 1fr; }
+  .plan.featured { transform: none; }
+  .faq-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div style="display:flex;align-items:center;gap:0">
+    <div class="nav-logo">Stratify <span>Lab</span></div>
+    <div class="nav-pill">Live</div>
+  </div>
+  <div class="nav-right">
+    <a href="#how" class="nav-link">How It Works</a>
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#pricing" class="btn-nav">Start Free Trial</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <div class="eyebrow-line"></div>
+        <div class="eyebrow-text">AI-Assisted Biomechanics</div>
+      </div>
+      <h1 class="hero-title">
+        See how<br>
+        <em>you</em><br>
+        <span class="line-accent">actually</span><br>
+        move.
+      </h1>
+      <p class="hero-sub">
+        Real-time movement analysis, muscle activation mapping, and <strong>evidence-based coaching cues</strong> — built by a Doctor of Physical Therapy. No sensors. No clinic visit. $19/month.
+      </p>
+      <div class="hero-cta">
+        <a href="#pricing" class="btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+          Start 7-Day Free Trial
+        </a>
+        <a href="https://caking3456.github.io/stratify-performance-lab-demo/" target="_blank" class="btn-ghost">
+          View Live Demo →
+        </a>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-dot"></div>
+        <div class="trust-text">Built by <strong>Dr. Chris King PT, DPT, B.S. Kinesiology</strong> · No credit card required</div>
+      </div>
+    </div>
+
+    <!-- Dashboard mockup -->
+    <div class="hero-visual">
+      <div style="position:relative">
+        <div class="mock-badge">● Live Analysis</div>
+        <div class="dashboard-mock">
+          <div class="mock-bar">
+            <div class="mock-dot" style="background:#ff5f57"></div>
+            <div class="mock-dot" style="background:#febc2e"></div>
+            <div class="mock-dot" style="background:#28c840"></div>
+            <div class="mock-title">Stratify Performance Lab — Back Squat</div>
+          </div>
+          <div class="mock-scan"></div>
+          <div class="mock-body">
+            <div class="mock-cards">
+              <div class="mock-card">
+                <div class="mock-card-label">Reps</div>
+                <div class="mock-card-val blue">6<span style="font-size:14px;color:var(--muted)">/8</span></div>
+                <div class="mock-card-sub">Set 2 · 185 lbs</div>
+              </div>
+              <div class="mock-card">
+                <div class="mock-card-label">Peak Force</div>
+                <div class="mock-card-val green">1,412</div>
+                <div class="mock-card-sub">N · GRF est.</div>
+              </div>
+              <div class="mock-card">
+                <div class="mock-card-label">Mv. Score</div>
+                <div class="mock-card-val warn">74</div>
+                <div class="mock-card-sub">Form fault R5</div>
+              </div>
+            </div>
+            <div class="mock-main">
+              <div class="mock-skeleton-box">
+                <div class="mock-sk-label">Skeleton · Bottom Position</div>
+                <div class="mock-sk-body">
+                  <svg viewBox="0 0 80 120" width="80" height="120">
+                    <!-- Head -->
+                    <circle cx="40" cy="12" r="8" fill="none" stroke="rgba(58,171,255,0.6)" stroke-width="1.5"/>
+                    <!-- Spine -->
+                    <line x1="40" y1="20" x2="40" y2="50" stroke="rgba(58,171,255,0.5)" stroke-width="1.5"/>
+                    <!-- Shoulders -->
+                    <line x1="22" y1="26" x2="58" y2="26" stroke="rgba(58,171,255,0.5)" stroke-width="1.5"/>
+                    <!-- Arms -->
+                    <line x1="22" y1="26" x2="16" y2="42" stroke="rgba(58,171,255,0.35)" stroke-width="1.2"/>
+                    <line x1="16" y1="42" x2="14" y2="56" stroke="rgba(58,171,255,0.35)" stroke-width="1.2"/>
+                    <line x1="58" y1="26" x2="64" y2="42" stroke="rgba(58,171,255,0.35)" stroke-width="1.2"/>
+                    <line x1="64" y1="42" x2="66" y2="56" stroke="rgba(58,171,255,0.35)" stroke-width="1.2"/>
+                    <!-- Hips -->
+                    <line x1="28" y1="50" x2="52" y2="50" stroke="rgba(58,171,255,0.4)" stroke-width="1.2"/>
+                    <!-- Left leg (squatted) -->
+                    <line x1="28" y1="50" x2="22" y2="78" stroke="rgba(58,171,255,0.7)" stroke-width="1.8"/>
+                    <line x1="22" y1="78" x2="28" y2="105" stroke="rgba(58,171,255,0.7)" stroke-width="1.8"/>
+                    <!-- Right leg -->
+                    <line x1="52" y1="50" x2="58" y2="78" stroke="rgba(58,171,255,0.7)" stroke-width="1.8"/>
+                    <line x1="58" y1="78" x2="52" y2="105" stroke="rgba(58,171,255,0.7)" stroke-width="1.8"/>
+                    <!-- Knee joints highlighted -->
+                    <circle cx="22" cy="78" r="4" fill="rgba(30,143,225,0.15)" stroke="rgba(58,171,255,0.9)" stroke-width="1.5"/>
+                    <circle cx="58" cy="78" r="4" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.9)" stroke-width="1.5"/>
+                    <!-- Valgus warn -->
+                    <text x="60" y="82" fill="rgba(245,158,11,0.9)" font-size="6" font-family="JetBrains Mono,monospace">⚠</text>
+                    <!-- Angle labels -->
+                    <text x="2" y="82" fill="rgba(58,171,255,0.7)" font-size="7" font-family="JetBrains Mono,monospace">89°</text>
+                    <!-- Muscle overlays -->
+                    <ellipse cx="25" cy="66" rx="6" ry="13" fill="rgba(239,68,68,0.18)" class="muscle-overlay"/>
+                    <ellipse cx="55" cy="66" rx="6" ry="13" fill="rgba(239,68,68,0.18)" class="muscle-overlay"/>
+                    <ellipse cx="40" cy="55" rx="10" ry="6" fill="rgba(245,158,11,0.15)" class="muscle-overlay"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="mock-muscles">
+                <div class="mock-card-label" style="margin-bottom:8px">Muscle Activation</div>
+                <div class="muscle-mini-row">
+                  <div class="muscle-mini-name">Quadriceps</div>
+                  <div class="muscle-mini-bar-bg"><div class="muscle-mini-fill" style="width:92%;background:linear-gradient(90deg,#EF4444,#F87171)"></div></div>
+                  <div class="muscle-mini-pct">92%</div>
+                </div>
+                <div class="muscle-mini-row">
+                  <div class="muscle-mini-name">Glute Max</div>
+                  <div class="muscle-mini-bar-bg"><div class="muscle-mini-fill" style="width:85%;background:linear-gradient(90deg,#F59E0B,#FCD34D)"></div></div>
+                  <div class="muscle-mini-pct">85%</div>
+                </div>
+                <div class="muscle-mini-row">
+                  <div class="muscle-mini-name">Hamstrings</div>
+                  <div class="muscle-mini-bar-bg"><div class="muscle-mini-fill" style="width:68%;background:linear-gradient(90deg,#8B5CF6,#A78BFA)"></div></div>
+                  <div class="muscle-mini-pct">68%</div>
+                </div>
+                <div class="muscle-mini-row">
+                  <div class="muscle-mini-name">Core (TVA)</div>
+                  <div class="muscle-mini-bar-bg"><div class="muscle-mini-fill" style="width:49%;background:linear-gradient(90deg,#22D4A0,#6EE7B7)"></div></div>
+                  <div class="muscle-mini-pct">49%</div>
+                </div>
+                <div class="muscle-mini-row">
+                  <div class="muscle-mini-name">Hip Abduct.</div>
+                  <div class="muscle-mini-bar-bg"><div class="muscle-mini-fill" style="width:42%;background:linear-gradient(90deg,#1E8FE1,#3AABFF)"></div></div>
+                  <div class="muscle-mini-pct">42%</div>
+                </div>
+              </div>
+            </div>
+            <!-- Tiny force chart -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;">
+              <div class="mock-card-label" style="margin-bottom:8px">Force Per Rep (N)</div>
+              <div style="display:flex;align-items:flex-end;gap:4px;height:32px;">
+                <div style="flex:1;background:var(--blue);border-radius:2px 2px 0 0;height:100%"></div>
+                <div style="flex:1;background:var(--blue);border-radius:2px 2px 0 0;height:96%"></div>
+                <div style="flex:1;background:var(--blue);border-radius:2px 2px 0 0;height:92%"></div>
+                <div style="flex:1;background:var(--blue);border-radius:2px 2px 0 0;height:89%"></div>
+                <div style="flex:1;background:var(--blue);border-radius:2px 2px 0 0;height:85%"></div>
+                <div style="flex:1;background:rgba(245,158,11,0.8);border-radius:2px 2px 0 0;height:80%"></div>
+                <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:2px 2px 0 0;height:25%"></div>
+                <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:2px 2px 0 0;height:25%"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px">
+                <span style="font-size:9px;color:var(--muted);font-family:var(--font-mono)">Peak: 1,412N</span>
+                <span style="font-size:9px;color:var(--warn);font-family:var(--font-mono)">↓11% fatigue</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="tickerInner">
+    <span class="ticker-item">Back Squat Analysis</span>
+    <span class="ticker-item">Knee Valgus Detection</span>
+    <span class="ticker-item">Ground Reaction Force Model</span>
+    <span class="ticker-item">Muscle Activation Mapping</span>
+    <span class="ticker-item">Hip Hinge / RDL</span>
+    <span class="ticker-item">Movement Quality Score</span>
+    <span class="ticker-item">Fatigue Modeling</span>
+    <span class="ticker-item">Evidence-Based Coaching Cues</span>
+    <span class="ticker-item">Overhead Press</span>
+    <span class="ticker-item">Clinical HEP Prescription</span>
+    <span class="ticker-item">Joint Angle Tracking</span>
+    <span class="ticker-item">Push-Up Analysis</span>
+    <span class="ticker-item">Forward Lunge</span>
+    <span class="ticker-item">Deadlift Biomechanics</span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item">Back Squat Analysis</span>
+    <span class="ticker-item">Knee Valgus Detection</span>
+    <span class="ticker-item">Ground Reaction Force Model</span>
+    <span class="ticker-item">Muscle Activation Mapping</span>
+    <span class="ticker-item">Hip Hinge / RDL</span>
+    <span class="ticker-item">Movement Quality Score</span>
+    <span class="ticker-item">Fatigue Modeling</span>
+    <span class="ticker-item">Evidence-Based Coaching Cues</span>
+    <span class="ticker-item">Overhead Press</span>
+    <span class="ticker-item">Clinical HEP Prescription</span>
+    <span class="ticker-item">Joint Angle Tracking</span>
+    <span class="ticker-item">Push-Up Analysis</span>
+    <span class="ticker-item">Forward Lunge</span>
+    <span class="ticker-item">Deadlift Biomechanics</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="section-inner">
+    <div class="how-header fade-up">
+      <p style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:12px">How It Works</p>
+      <h2 class="section-title">From rep one to <em>real insight</em></h2>
+      <p class="section-sub">No wearables. No camera setup. No clinic appointment. Just select your exercise and move.</p>
+    </div>
+    <div class="steps">
+      <div class="step fade-up">
+        <div class="step-num">01</div>
+        <div class="step-icon">🏋️</div>
+        <div class="step-title">Select Your Lift</div>
+        <div class="step-body">Choose from 6 clinically-modeled exercises: Squat, Deadlift, Lunge, Hip Hinge, Push-Up, Overhead Press. Each has a dedicated biomechanics model built from peer-reviewed research.</div>
+        <div class="step-tag">Exercise Library</div>
+      </div>
+      <div class="step fade-up" style="transition-delay:.1s">
+        <div class="step-num">02</div>
+        <div class="step-icon">📊</div>
+        <div class="step-title">Run the Analysis</div>
+        <div class="step-body">The simulation engine tracks rep phases (eccentric, isometric, concentric), estimates ground reaction forces, scores movement quality, and detects form faults in real time.</div>
+        <div class="step-tag">Sim Engine · 60fps</div>
+      </div>
+      <div class="step fade-up" style="transition-delay:.2s">
+        <div class="step-num">03</div>
+        <div class="step-icon">🧠</div>
+        <div class="step-title">Get a Clinical Read</div>
+        <div class="step-body">After each set, you receive an AI summary, quality trend graph, evidence-based coaching cues with citations, and a corrective exercise prescription written at DPT level.</div>
+        <div class="step-tag">Clinical HEP Rx</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-inner">
+    <div style="text-align:center" class="fade-up">
+      <p style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:12px">Platform Features</p>
+      <h2 class="section-title">Built to the <em>clinical standard</em></h2>
+      <p class="section-sub">Everything in the platform traces back to peer-reviewed biomechanics research — not bro-science.</p>
+    </div>
+    <div class="features-grid fade-up">
+      <div class="feat">
+        <div class="feat-icon">🦴</div>
+        <div class="feat-title">Live Skeleton Animation</div>
+        <div class="feat-body">SVG-based skeletal visualization adapts per exercise with animated muscle overlays. Lerps between top and bottom positions frame-by-frame, showing exactly where load is during each phase.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">Force Estimation Model</div>
+        <div class="feat-body">Simplified ground reaction force model estimates peak force in Newtons per rep, scaled to your body mass. Tracks fatigue-driven force decline across a set — a real metric, not a guess.</div>
+        <div class="feat-evidence">Escamilla et al. (2001, 2002) · GRF modeling basis</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">💪</div>
+        <div class="feat-title">Muscle Activation Map</div>
+        <div class="feat-body">Primary movers and stabilizers displayed with estimated activation percentages per exercise. Know whether your quads, glutes, or hamstrings are actually doing the work — or if your stabilizers are asleep.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⚠️</div>
+        <div class="feat-title">Fault Detection</div>
+        <div class="feat-body">Detects common movement faults like knee valgus, fatigue-driven form breakdown, and reduced depth. Flags the exact rep where quality drops — so you know when to stop, not just when to start.</div>
+        <div class="feat-evidence">Myer et al. (2008) · Ireland et al. (2003)</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📋</div>
+        <div class="feat-title">HEP Corrective Prescription</div>
+        <div class="feat-body">After each set, the platform generates a Home Exercise Program — targeted corrective drills mapped to detected faults. Clamshells for valgus. Tempo squats for fatigue. Dowel drills for hinge pattern. Real PT logic.</div>
+        <div class="feat-evidence">Distefano et al. (2009) · Khayambashi et al. (2012)</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📤</div>
+        <div class="feat-title">CSV Export</div>
+        <div class="feat-body">Export your full set data — rep forces, quality scores, fault flags — as a CSV. Track trends across weeks. Bring data to your coach, PT, or just keep it for yourself.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CREDIBILITY -->
+<section class="cred" id="about">
+  <div class="section-inner">
+    <div class="cred-inner">
+      <div class="fade-up">
+        <div class="cred-label">Why Trust This</div>
+        <h2 class="cred-title">Built by a <em>clinician</em>,<br>not a marketer.</h2>
+        <p class="cred-body">Every recommendation, every evidence citation, every corrective drill in Stratify was written by a Doctor of Physical Therapy with a B.S. in Kinesiology. This isn't a fitness app with clinical branding — it's clinical knowledge made accessible.</p>
+        <div class="cred-certs">
+          <div class="cert">
+            <div class="cert-check">✓</div>
+            <div>
+              <div class="cert-text">Doctor of Physical Therapy (DPT)</div>
+              <div class="cert-sub">Clinical movement analysis · Patient rehabilitation · Evidence-based practice</div>
+            </div>
+          </div>
+          <div class="cert">
+            <div class="cert-check">✓</div>
+            <div>
+              <div class="cert-text">B.S. Kinesiology</div>
+              <div class="cert-sub">Exercise physiology · Biomechanics · Anatomy · Motor control</div>
+            </div>
+          </div>
+          <div class="cert">
+            <div class="cert-check">✓</div>
+            <div>
+              <div class="cert-text">Peer-reviewed evidence base</div>
+              <div class="cert-sub">Myer · McGill · Escamilla · Ludewig · Calatayud · Ireland</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cred-stats fade-up" style="transition-delay:.15s">
+        <div class="stat-tile blue">
+          <div class="stat-tile-num">6</div>
+          <div class="stat-tile-label">Clinically-modeled exercises with dedicated biomechanics</div>
+          <div class="stat-tile-sub">Squat · DL · Lunge · RDL · Push-Up · OHP</div>
+        </div>
+        <div class="stat-tile green">
+          <div class="stat-tile-num">60<span style="font-size:20px">fps</span></div>
+          <div class="stat-tile-label">Real-time simulation engine with frame-level phase detection</div>
+          <div class="stat-tile-sub">requestAnimationFrame loop</div>
+        </div>
+        <div class="stat-tile warn">
+          <div class="stat-tile-num">13</div>
+          <div class="stat-tile-label">HEP corrective drills mapped to specific movement faults</div>
+          <div class="stat-tile-sub">Evidence-cited per drill</div>
+        </div>
+        <div class="stat-tile white">
+          <div class="stat-tile-num" style="color:var(--text)">$0</div>
+          <div class="stat-tile-label">Equipment needed. Works in any browser, zero setup.</div>
+          <div class="stat-tile-sub">No sensors · No cameras · No installs</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="section-inner">
+    <div class="pricing-header fade-up">
+      <p style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:12px">Simple Pricing</p>
+      <h2 class="section-title">Less than a <em>single PT copay</em>.</h2>
+      <p class="section-sub" style="margin-bottom:16px">Clinical-grade biomechanics insight for the cost of two lattes a month.</p>
+      <div class="pricing-toggle">
+        <button class="toggle-btn active" id="btnMonthly" onclick="setToggle('monthly')">Monthly</button>
+        <button class="toggle-btn" id="btnAnnual" onclick="setToggle('annual')">Annual <span class="save-badge">Save 20%</span></button>
+      </div>
+    </div>
+    <div class="plans">
+      <!-- Free -->
+      <div class="plan fade-up">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price"><sup>$</sup><span class="price-val" data-monthly="0" data-annual="0">0</span></div>
+        <div class="plan-period">forever free</div>
+        <ul class="plan-features">
+          <li>Back Squat analysis (1 exercise)</li>
+          <li>Live skeleton + muscle map</li>
+          <li>Movement quality score</li>
+          <li class="dim">Force estimation model</li>
+          <li class="dim">HEP corrective prescription</li>
+          <li class="dim">CSV export</li>
+          <li class="dim">All 6 exercises</li>
+          <li class="dim">Session history</li>
+        </ul>
+        <a href="https://caking3456.github.io/stratify-performance-lab-demo/" target="_blank" class="btn-plan outline">Try Free Demo</a>
+      </div>
+      <!-- Pro -->
+      <div class="plan featured fade-up" style="transition-delay:.1s">
+        <div class="plan-badge">Most Popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup>$</sup><span class="price-val" data-monthly="19" data-annual="15">19</span></div>
+        <div class="plan-period" id="pro-period">per month, billed monthly</div>
+        <ul class="plan-features">
+          <li>All 6 exercises unlocked</li>
+          <li>Live skeleton + muscle map</li>
+          <li>Full force estimation model</li>
+          <li>Movement quality score + trend</li>
+          <li>HEP corrective drill prescription</li>
+          <li>CSV export per set</li>
+          <li>Session config (reps, load, mass)</li>
+          <li>Clinical recommendations w/ citations</li>
+        </ul>
+        <a href="#" class="btn-plan solid" onclick="handleSignup(event,'pro')">Start 7-Day Free Trial</a>
+      </div>
+      <!-- Coach -->
+      <div class="plan fade-up" style="transition-delay:.2s">
+        <div class="plan-name">Coach</div>
+        <div class="plan-price"><sup>$</sup><span class="price-val" data-monthly="49" data-annual="39">49</span></div>
+        <div class="plan-period" id="coach-period">per month, billed monthly</div>
+        <ul class="plan-features">
+          <li>Everything in Pro</li>
+          <li>Up to 10 client profiles</li>
+          <li>Branded PDF session reports</li>
+          <li>Multi-set comparison view</li>
+          <li>Client notes + session log</li>
+          <li>Priority email support</li>
+          <li>Early access to new exercises</li>
+          <li>API access (coming Q2)</li>
+        </ul>
+        <a href="#" class="btn-plan outline" onclick="handleSignup(event,'coach')">Start 7-Day Free Trial</a>
+      </div>
+    </div>
+    <p class="pricing-note">No credit card required for trial · Cancel anytime · 100% browser-based, no downloads</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <div class="section-inner">
+    <div style="text-align:center" class="fade-up">
+      <p style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:12px">FAQ</p>
+      <h2 class="section-title">Common <em>questions</em></h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item fade-up">
+        <div class="faq-q">Is this a substitute for seeing a PT?</div>
+        <div class="faq-a">No — and we're clear about that. Stratify is an educational and training tool. It won't diagnose injuries or replace clinical evaluation. But it will help you train smarter between appointments, understand your movement patterns, and know when something's worth getting checked out.</div>
+      </div>
+      <div class="faq-item fade-up" style="transition-delay:.05s">
+        <div class="faq-q">Do I need any equipment or cameras?</div>
+        <div class="faq-a">None. Stratify runs entirely in your browser using a simulation engine — no wearables, no phone cameras, no setup. The MediaPipe real-camera integration is on the roadmap; the current platform gives you clinically-modeled simulation that's already more detailed than most consumer apps.</div>
+      </div>
+      <div class="faq-item fade-up" style="transition-delay:.1s">
+        <div class="faq-q">How accurate is the force estimation?</div>
+        <div class="faq-a">It's a simplified GRF (ground reaction force) model scaled to your body mass and the exercise's force multiplier, based on published biomechanics research. It won't match a force plate in a sports science lab — but it gives you a meaningful relative measure of output and fatigue trends across a set.</div>
+      </div>
+      <div class="faq-item fade-up" style="transition-delay:.15s">
+        <div class="faq-q">Who is this built for?</div>
+        <div class="faq-a">Serious athletes who self-coach, lifters who want to understand their mechanics beyond YouTube cues, gym-goers who've had injuries and want to train more intelligently, and anyone curious about what their body is actually doing under load.</div>
+      </div>
+      <div class="faq-item fade-up" style="transition-delay:.2s">
+        <div class="faq-q">What's the HEP prescription?</div>
+        <div class="faq-a">After each set, Stratify generates a Home Exercise Program — corrective drills targeted at detected faults. Knee valgus? You'll get clamshells and lateral band walks with DPT-written cues and evidence citations. It's the same logic a PT would apply, delivered after every session.</div>
+      </div>
+      <div class="faq-item fade-up" style="transition-delay:.25s">
+        <div class="faq-q">Can I cancel anytime?</div>
+        <div class="faq-a">Yes, always. No lock-ins, no cancellation fees. Your trial starts free with no credit card. If you upgrade and decide it's not for you, cancel before your next billing date and you won't be charged.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-final">
+  <div style="position:relative;z-index:1">
+    <h2 class="cta-final-title fade-up">Stop guessing.<br><em>Start knowing.</em></h2>
+    <p class="cta-final-sub fade-up">7 days free. No credit card. Cancel anytime.</p>
+    <div class="fade-up" style="display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div class="email-form">
+        <input type="email" class="email-input" placeholder="your@email.com" id="ctaEmail">
+        <button class="email-btn" onclick="handleEmailSignup()">Get Started Free</button>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.05em">
+        Built by <strong style="color:var(--text)">Dr. Chris King PT, DPT, B.S. Kinesiology</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Stratify <span>Performance</span> Lab</div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="https://caking3456.github.io/stratify-performance-lab-demo/" target="_blank">Live Demo</a>
+    <a href="mailto:contact@stratifylab.com">Contact</a>
+  </div>
+  <div class="footer-copy">© 2025 Stratify Performance Lab · Not medical advice · Educational use</div>
+</footer>
+
+<script>
+// Pricing toggle
+let pricingMode = 'monthly';
+function setToggle(mode) {
+  pricingMode = mode;
+  document.getElementById('btnMonthly').classList.toggle('active', mode === 'monthly');
+  document.getElementById('btnAnnual').classList.toggle('active', mode === 'annual');
+  document.querySelectorAll('.price-val').forEach(el => {
+    el.textContent = el.dataset[mode];
+  });
+  document.getElementById('pro-period').textContent = mode === 'annual' ? 'per month, billed annually ($180/yr)' : 'per month, billed monthly';
+  document.getElementById('coach-period').textContent = mode === 'annual' ? 'per month, billed annually ($468/yr)' : 'per month, billed monthly';
+}
+
+// Signup handlers (wire to Stripe / auth when ready)
+function handleSignup(e, plan) {
+  e.preventDefault();
+  // Replace with Stripe Checkout URL or auth redirect
+  alert(`Stripe integration coming soon!\n\nPlan: ${plan}\nMode: ${pricingMode}\n\nFor now, try the live demo at the link below.`);
+}
+
+function handleEmailSignup() {
+  const email = document.getElementById('ctaEmail').value;
+  if (!email || !email.includes('@')) {
+    document.getElementById('ctaEmail').style.borderColor = '#EF4444';
+    return;
+  }
+  document.getElementById('ctaEmail').style.borderColor = 'var(--green)';
+  // Replace with Mailchimp / ConvertKit API call
+  alert(`Thanks! We'll reach out to ${email} with early access details.\n\n(Wire up your email provider here — Mailchimp, ConvertKit, etc.)`);
+}
+
+// Scroll fade-in
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
