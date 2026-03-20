@@ -259,9 +259,9 @@
         </div>
         
             <!-- CAMERA PANEL -->
-            <div id="cameraPanel" style="display:none;position:relative;width:100%;background:#080C12;border:1px solid rgba(255,255,255,0.12);border-radius:8px;overflow:hidden;flex-direction:column;align-items:center;">
+            <div id="cameraPanel" style="display:none;position:relative;width:100%;height:370px;background:#080C12;border:1px solid rgba(255,255,255,0.12);border-radius:8px;overflow:hidden;flex-direction:column;align-items:center;justify-content:center;">
               <video id="cameraVideo" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;" playsinline autoplay muted></video>
-              <canvas id="cameraCanvas" width="360" height="480" style="width:100%;height:auto;display:block;"></canvas>
+              <canvas id="cameraCanvas" width="360" height="480" style="height:100%;width:auto;display:block;margin:0 auto;"></canvas>
               <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(8,12,18,0.8);border-top:1px solid rgba(255,255,255,0.07);padding:8px 16px;display:flex;gap:20px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7894;">
                 <span>📷 LIVE CAMERA</span>
                 <span style="color:#22D4A0">● MediaPipe BlazePose</span>
