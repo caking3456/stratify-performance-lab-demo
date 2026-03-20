@@ -163,18 +163,19 @@ class CameraController {
     this._canvasEl = document.getElementById('cameraCanvas');
 
     if (!this._videoEl || !this._canvasEl) {
-      console.error('Camera elements not found. Make sure cameraVideo and cameraCanvas exist in the DOM.');
-      return;
+      throw new Error('Camera elements not found in DOM.');
     }
 
     this._canvasCtx = this._canvasEl.getContext('2d');
 
     // Load MediaPipe Pose
-    // Loaded via CDN script tags in index.html — see instructions below
+    // Loaded via CDN script tags in index.html
     if (typeof Pose === 'undefined') {
-      console.error('MediaPipe Pose not loaded. Add CDN scripts to index.html.');
-      this.isRunning = false;
-      return;
+      throw new Error('MediaPipe Pose not loaded. Check CDN scripts.');
+    }
+
+    if (typeof Camera === 'undefined') {
+      throw new Error('MediaPipe Camera utils not loaded. Check CDN scripts.');
     }
 
     this._pose = new Pose({
@@ -715,6 +716,10 @@ function startCameraAnalysis() {
   setEl('sessionTargetReps', sessionConfig.targetReps);
   setEl('statRepsDenom',     sessionConfig.targetReps);
 
+  // Hide the camera prompt so the canvas is visible
+  const prompt = document.getElementById('cameraPrompt');
+  if (prompt) prompt.style.display = 'none';
+
   // Wire callbacks — same as sim engine
   camCtrl.load(currentExerciseId, sessionConfig.targetReps, 80);
   camCtrl.setNumber      = sessionConfig.setNumber;
@@ -722,20 +727,25 @@ function startCameraAnalysis() {
   camCtrl.onRepComplete  = handleRepComplete;
   camCtrl.onSetComplete  = handleSetComplete;
 
-  camCtrl.start().catch(err => {
-    showToast('⚠ Camera access denied. Check browser permissions.');
+  camCtrl.start().then(() => {
+    // Update button UI only after camera confirms started
+    const btn = document.getElementById('startBtn');
+    if (btn) {
+      btn.classList.add('recording');
+      btn.querySelector('span').textContent = 'Stop Analysis';
+    }
+    document.getElementById('recBadge').style.display = 'flex';
+    renderSummary(null);
+  }).catch(err => {
+    // Re-show prompt so user can try again
+    if (prompt) prompt.style.display = 'flex';
+    const msg = err.message.includes('MediaPipe')
+      ? '⚠ Camera analysis unavailable — MediaPipe failed to load. Check your internet connection.'
+      : '⚠ Camera access denied — please allow camera permissions and try again.';
+    showToast(msg);
     console.error('[Stratify Camera] start error:', err);
     toggleCameraMode(false);
   });
-
-  // Update button UI
-  const btn = document.getElementById('startBtn');
-  if (btn) {
-    btn.classList.add('recording');
-    btn.querySelector('span').textContent = 'Stop Analysis';
-  }
-  document.getElementById('recBadge').style.display = 'flex';
-  renderSummary(null);
 }
 
 function stopCameraAnalysis() {
