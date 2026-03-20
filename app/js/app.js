@@ -124,6 +124,10 @@ function toggleAnalysis() {
     } else {
       startAnalysis();
     }
+  if (sim.isRunning) {
+    stopAnalysis();
+  } else {
+    startAnalysis();
   }
 }
 
