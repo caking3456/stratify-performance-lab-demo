@@ -112,6 +112,18 @@ function loadExercise(id) {
    RECORDING CONTROL
    ══════════════════════════════════════════ */
 function toggleAnalysis() {
+  if (cameraMode) {
+    if (camCtrl.isRunning) {
+      stopCameraAnalysis();
+    } else {
+      startCameraAnalysis();
+    }
+  } else {
+    if (sim.isRunning) {
+      stopAnalysis();
+    } else {
+      startAnalysis();
+    }
   if (sim.isRunning) {
     stopAnalysis();
   } else {

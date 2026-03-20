@@ -143,6 +143,11 @@
         </svg>
         Config
       </button>
+      <button class="btn btn-ghost" id="cameraModeBtn"
+        onclick="toggleCameraMode(!cameraMode)"
+        title="Toggle live camera mode (requires rear camera)">
+       📷 Use Camera
+  </button>
 
       <!-- Hidden inputs synced to session config -->
       <input type="hidden" id="targetRepsInput" value="8">
@@ -252,6 +257,28 @@
             </div>
           </div>
         </div>
+        
+            <!-- CAMERA PANEL -->
+            <div id="cameraPanel" style="display:none;position:relative;width:100%;background:#080C12;border:1px solid rgba(255,255,255,0.12);border-radius:8px;overflow:hidden;flex-direction:column;align-items:center;">
+              <video id="cameraVideo" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;" playsinline autoplay muted></video>
+              <canvas id="cameraCanvas" width="360" height="480" style="width:100%;height:auto;display:block;"></canvas>
+              <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(8,12,18,0.8);border-top:1px solid rgba(255,255,255,0.07);padding:8px 16px;display:flex;gap:20px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7894;">
+                <span>📷 LIVE CAMERA</span>
+                <span style="color:#22D4A0">● MediaPipe BlazePose</span>
+                <span>Sagittal View</span>
+              </div>
+              <div id="cameraPrompt" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,12,18,0.92);font-family:'Barlow',sans-serif;color:#E8EDF5;text-align:center;padding:24px;">
+                <div style="font-size:32px;margin-bottom:12px;">📷</div>
+                <div style="font-size:14px;font-weight:600;margin-bottom:8px;">Camera access required</div>
+                <div style="font-size:12px;color:#6B7894;margin-bottom:20px;max-width:240px;">Point your phone at yourself from the side. Make sure your full body is visible.</div>
+                <button onclick="startCameraAnalysis()" style="background:#1E8FE1;color:#fff;border:none;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;padding:12px 28px;cursor:pointer;">Allow Camera & Start</button>
+              </div>
+            </div>
+
+            <!-- Camera mode badge -->
+            <div class="badge green" id="camBadge" style="display:none;">
+              <div class="dot"></div>Camera Live
+            </div>
 
       </div><!-- /left col -->
 
@@ -375,10 +402,15 @@
 <div class="toast" id="toast"></div>
 
 <!-- SCRIPTS — order matters: exercises → simulation → app -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 <script src="js/hep.js"></script>
 <script src="js/exercises.js"></script>
 <script src="js/simulation.js"></script>
 <script src="js/app.js"></script>
+<script src="js/camera.js"></script>
 
 <!-- Sync exercise panel label after load -->
 <script>
