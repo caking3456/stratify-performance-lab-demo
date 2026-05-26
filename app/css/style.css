@@ -319,7 +319,7 @@ select { font-family: inherit; }
   background: #070910;
   border-radius: 0;
   position: relative;
-  height: 370px;
+  height: min(370px, 45vh);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
@@ -761,9 +761,15 @@ select { font-family: inherit; }
   .angle-grid { grid-template-columns: 1fr 1fr; }
   .content { padding: 16px; }
   .topbar  { padding: 0 16px; }
+  #cameraPanel { height: min(370px, 45vh) !important; }
 }
 @media (max-width: 500px) {
   .grid-3 { grid-template-columns: 1fr; }
+  .tab {
+    padding: 7px 9px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
 }
 
 /* ── HEP Prescription ──────────────────────────────────────── */
