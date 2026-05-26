@@ -285,7 +285,7 @@ function handleRepComplete({ repNum, force, score, hasValgus }) {
 
   // Valgus warning
   if (hasValgus) {
-    setEl('statScoreSub', '⚠ Form fault detected');
+    setEl('statScoreSub', '⚠ Watch your knee alignment');
     document.getElementById('statScoreSub').style.color = 'var(--warn)';
   }
 
@@ -585,15 +585,15 @@ function renderSummary(summary) {
 
   if (!summary) {
     if (numEl) numEl.textContent = '—';
-    if (titleEl) titleEl.textContent = 'Awaiting set completion';
-    if (bodyEl) bodyEl.innerHTML = '<em>Complete a set to view your AI-assisted summary.</em>';
+    if (titleEl) titleEl.textContent = 'Complete a set to see your score';
+    if (bodyEl) bodyEl.innerHTML = '<em>Start and finish a set — your results will appear here.</em>';
     renderSparkline([]);
     return;
   }
 
   if (numEl) numEl.textContent = summary.avgScore;
   if (titleEl) titleEl.textContent = summary.grade;
-  if (bodyEl) bodyEl.innerHTML = `<strong>Clinical Observation:</strong> ${summary.summaryText}`;
+  if (bodyEl) bodyEl.innerHTML = summary.summaryText;
   updateScoreColor(summary.avgScore);
   renderSparkline(summary.repScores);
 }

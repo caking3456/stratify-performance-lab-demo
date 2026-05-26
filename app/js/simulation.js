@@ -228,10 +228,10 @@ class BiomechanicsSimulation {
       ? Math.round((1 - this.repForces[this.repForces.length - 1] / this.repForces[0]) * 100)
       : 0;
 
-    const grade = avgScore >= 88 ? 'Excellent' :
-                  avgScore >= 78 ? 'Good — Minor Corrections Needed' :
-                  avgScore >= 65 ? 'Fair — Form Improvements Required' :
-                                   'Poor — Reduce Load & Focus on Technique';
+    const grade = avgScore >= 88 ? 'Excellent — keep it up' :
+                  avgScore >= 78 ? 'Good — a few things to refine' :
+                  avgScore >= 65 ? 'Fair — let\'s work on some things' :
+                                   'Needs work — try lighter weight and slow it down';
 
     const summaryText = this._buildSummaryText(avgScore, avgForce, peakForce, fatigue);
 
@@ -266,7 +266,7 @@ class BiomechanicsSimulation {
                          fatigue > 5  ? `A ${fatigue}% force reduction is within acceptable range.` :
                          `Force output was consistent across the set — strong endurance profile.`;
 
-    return `${reps} of ${this.targetReps} reps completed. ${scoreContext} Avg estimated peak force ${avgForce}N (peak ${peakForce}N on Rep 1). ${forceContext} See Clinical Recommendations below.`;
+    return `${reps} of ${this.targetReps} reps completed. ${scoreContext} Average estimated peak force was ~${avgForce}N (peak ~${peakForce}N on your first rep). ${forceContext} Check the Tips and Exercises tabs below.`;
   }
 }
 

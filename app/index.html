@@ -118,7 +118,7 @@
         <input id="cfgLoad" type="text" value="185 lbs" placeholder="e.g. 185 lbs, BW, etc."
           style="display:block;width:100%;margin-top:4px;background:var(--bg-panel);border:1px solid var(--border-soft);border-radius:4px;padding:8px 12px;color:var(--text);font-size:14px;outline:none;">
       </label>
-      <label style="font-size:12px;color:var(--text-muted);">Subject Mass (kg) — for force estimation
+      <label style="font-size:12px;color:var(--text-muted);">Your bodyweight (kg)
         <input id="cfgMass" type="number" min="30" max="200" value="80"
           style="display:block;width:100%;margin-top:4px;background:var(--bg-panel);border:1px solid var(--border-soft);border-radius:4px;padding:8px 12px;color:var(--text);font-size:14px;outline:none;">
       </label>
@@ -181,7 +181,7 @@
   <!-- TOP BAR -->
   <header class="topbar">
     <div class="topbar-title">Stratify <span>Performance</span> Lab</div>
-    <div class="badge"><div class="dot"></div>Sim Engine Active</div>
+    <div class="badge"><div class="dot"></div>Demo Active</div>
     <div class="badge green" id="simBadge"><div class="dot"></div>Demo Mode</div>
     <div class="rec-badge" id="recBadge" style="display:none;"><div class="rec-dot"></div>REC</div>
     <div class="topbar-spacer"></div>
@@ -248,12 +248,12 @@
 
       <div class="stat-card">
         <div class="stat-accent green"></div>
-        <div class="stat-label">Estimated Peak Force</div>
+        <div class="stat-label">Peak Force</div>
         <div class="stat-value">
           <span id="statForce">—</span><span class="unit" id="statForceUnit">N</span>
         </div>
         <div class="stat-sub">
-          GRF model &nbsp;·&nbsp; <span class="phase-pill setup" id="phasePill">Setup</span>
+          per rep estimate &nbsp;·&nbsp; <span class="phase-pill setup" id="phasePill">Setup</span>
         </div>
       </div>
 
@@ -278,11 +278,11 @@
         <!-- SKELETON VISUALIZATION -->
         <div class="card card-flush">
           <div class="card-header">
-            <span class="card-title">Biomechanics & Skeleton Analysis</span>
+            <span class="card-title">Movement Analysis</span>
             <div style="display:flex;gap:8px;align-items:center;">
               <div class="skeleton-badges">
-                <div class="badge" style="font-size:9px;">MediaPipe Model</div>
-                <div class="badge" style="font-size:9px;">Sim Mode</div>
+                <div class="badge" style="font-size:9px;">AI Tracking</div>
+                <div class="badge" style="font-size:9px;">Demo</div>
               </div>
             </div>
           </div>
@@ -361,7 +361,7 @@
         <!-- MUSCLE ACTIVATION -->
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Muscle Activation Map</span>
+            <span class="card-title">Muscles Working</span>
             <button class="card-action">Anatomy View →</button>
           </div>
           <div class="section-title">Primary Movers</div>
@@ -379,8 +379,8 @@
       <!-- Force Chart -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Force Per Rep (Estimated)</span>
-          <span class="badge" style="font-size:9px;">GRF Model</span>
+          <span class="card-title">Force Per Rep</span>
+          <span class="badge" style="font-size:9px;">Estimated</span>
         </div>
         <div class="force-chart" id="forceChart"></div>
         <div class="force-stats">
@@ -393,7 +393,7 @@
       <!-- Joint Angles -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Joint Angles — Live</span>
+          <span class="card-title">Joint Angles</span>
         </div>
         <div class="angle-grid" id="angleGrid"></div>
       </div>
@@ -403,15 +403,15 @@
     <!-- ── CLINICAL ANALYSIS ─────────────────────────────────── -->
     <div class="card" id="clinicalCard">
       <div class="card-header">
-        <span class="card-title">Clinical Analysis</span>
+        <span class="card-title">Your Results</span>
         <span class="badge warn" style="font-size:9px;">Educational Only</span>
       </div>
 
       <!-- Tabs -->
       <div class="tabs">
-        <button class="tab active" onclick="switchTab(this, 'paneAnalysis')">AI Summary</button>
-        <button class="tab" onclick="switchTab(this, 'paneGraph')">Quality Trend</button>
-        <button class="tab" onclick="switchTab(this, 'paneRecs')">Clinical Recs</button>
+        <button class="tab active" onclick="switchTab(this, 'paneAnalysis')">Your Score</button>
+        <button class="tab" onclick="switchTab(this, 'paneGraph')">Rep Quality</button>
+        <button class="tab" onclick="switchTab(this, 'paneRecs')">Tips to Improve</button>
         <button class="tab" onclick="switchTab(this, 'paneHep')">HEP Rx <span class="hep-badge" id="hepBadge" style="display:none">0</span></button>
       </div>
 
