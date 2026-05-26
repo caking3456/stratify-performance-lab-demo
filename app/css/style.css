@@ -805,6 +805,12 @@ select { font-family: inherit; }
   .topbar         { padding: 0 16px; }
   .clinician-tag  { display: none; }
   #simBadge       { display: none !important; }
+  /* Control bar: strip secondary actions, stretch select to fill */
+  .ctrl-secondary  { display: none; }
+  .btn-label       { display: none; }
+  .exercise-select { flex: 1; min-width: 0; }
+  .control-bar     { gap: 8px; }
+  #cameraModeBtn   { padding: 8px 11px; }
   /* Grids */
   .grid-3 { grid-template-columns: 1fr 1fr; }
   .grid-2 { grid-template-columns: 1fr; }

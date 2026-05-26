@@ -242,30 +242,31 @@
         <span>Start Analysis</span>
       </button>
 
-      <button class="btn btn-ghost" onclick="exportCSV()" title="Export rep data as CSV">
+      <button class="btn btn-ghost ctrl-secondary" onclick="exportCSV()" title="Export rep data as CSV">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
         </svg>
         Export CSV
       </button>
 
-      <button class="btn btn-ghost" onclick="openSessionConfig()" title="Configure session">
+      <button class="btn btn-ghost ctrl-secondary" onclick="openSessionConfig()" title="Configure session">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83"/>
         </svg>
         Config
       </button>
+
       <button class="btn btn-ghost" id="cameraModeBtn"
         onclick="toggleCameraMode(!cameraMode)"
         title="Toggle live camera mode (requires rear camera)">
-       📷 Use Camera
-  </button>
+        📷 <span class="btn-label">Use Camera</span>
+      </button>
 
       <!-- Hidden inputs synced to session config -->
       <input type="hidden" id="targetRepsInput" value="8">
       <input type="hidden" id="loadInput" value="185 lbs">
 
-      <div class="session-info">
+      <div class="session-info ctrl-secondary">
         Set: <strong id="sessionSetNum">1</strong>
         &nbsp;|&nbsp; Reps: <strong id="sessionTargetReps">8</strong>
         &nbsp;|&nbsp; Load: <strong id="sessionLoad">185 lbs</strong>
