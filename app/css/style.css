@@ -606,7 +606,7 @@ select { font-family: inherit; }
 .rep-pop { animation: countUp 0.3s ease; }
 
 /* ══════════════════════════════════════════
-   DISCLAIMER MODAL OVERLAY
+   MODAL OVERLAY (shared)
    ══════════════════════════════════════════ */
 .modal-overlay {
   position: fixed; inset: 0;
@@ -637,6 +637,100 @@ select { font-family: inherit; }
   border-radius: 6px; padding: 12px 14px;
   font-size: 12px; color: var(--warn); line-height: 1.6;
   margin-bottom: 20px;
+}
+
+/* ══════════════════════════════════════════
+   ONBOARDING
+   ══════════════════════════════════════════ */
+.onboard-steps {
+  display: flex; gap: 8px; align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.onboard-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border-soft);
+  transition: all 0.25s;
+}
+.onboard-dot.active {
+  background: var(--blue);
+  width: 22px; border-radius: 4px;
+}
+.onboard-logo {
+  display: block; height: 44px; width: auto;
+  margin: 0 auto 16px;
+  object-fit: contain;
+}
+.onboard-sub {
+  font-size: 11px; color: var(--blue-light);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  font-weight: 600; margin-bottom: 14px; line-height: 1;
+}
+.onboard-disclaimer {
+  font-size: 11px; color: var(--text-dim);
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.15);
+  border-radius: 5px; padding: 9px 12px;
+  line-height: 1.6; margin-bottom: 16px;
+}
+.onboard-field { margin-bottom: 14px; }
+.onboard-field label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.06em; margin-bottom: 6px;
+}
+.onboard-field input,
+.onboard-field select {
+  width: 100%; background: var(--bg-panel);
+  border: 1px solid var(--border-soft); border-radius: 4px;
+  padding: 9px 12px; color: var(--text); font-size: 14px;
+  outline: none; transition: border-color 0.18s; font-family: inherit;
+}
+.onboard-field input:focus,
+.onboard-field select:focus { border-color: var(--blue); }
+.input-row {
+  display: flex; align-items: center;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px; overflow: hidden;
+  transition: border-color 0.18s;
+}
+.input-row:focus-within { border-color: var(--blue); }
+.input-row input { border: none !important; border-radius: 0 !important; flex: 1; background: transparent !important; }
+.input-unit {
+  padding: 0 12px; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); background: rgba(255,255,255,0.04);
+  border-left: 1px solid var(--border-soft);
+  align-self: stretch; display: flex; align-items: center;
+}
+.input-hint { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+.mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.mode-card {
+  background: var(--bg-panel); border: 2px solid var(--border-soft);
+  border-radius: 8px; padding: 16px 14px;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.mode-card:hover { border-color: var(--blue); }
+.mode-card.active { border-color: var(--blue); background: rgba(30,143,225,0.08); }
+.mode-icon { font-size: 24px; margin-bottom: 8px; }
+.mode-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; font-weight: 700; color: var(--white);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;
+}
+.mode-card.active .mode-title { color: var(--blue-light); }
+.mode-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+.onboard-nav { display: flex; gap: 10px; }
+.onboard-nav .btn { flex: 1; justify-content: center; }
+
+/* ── Nav disabled state ── */
+.nav-item.disabled { opacity: 0.38; cursor: not-allowed; }
+.nav-item.disabled:hover { color: var(--text-muted); background: none; border-left-color: transparent; }
+.nav-soon {
+  font-size: 8px; font-weight: 700; color: var(--text-dim);
+  background: rgba(255,255,255,0.06); border-radius: 3px;
+  padding: 1px 4px; margin-left: 4px; vertical-align: middle;
+  text-transform: uppercase; letter-spacing: 0.05em;
 }
 
 /* ══════════════════════════════════════════

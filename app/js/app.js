@@ -27,35 +27,87 @@ let sessionConfig = { targetReps: 8, setNumber: 1, loadLabel: '185 lbs' };
    INIT
    ══════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  // Show disclaimer modal
-  document.getElementById('disclaimerModal').style.display = 'flex';
-  // Populate exercise options
+  document.getElementById('onboardModal').style.display = 'flex';
   populateExerciseSelect();
-  // Load default exercise UI
   loadExercise('squat');
-  // Nav click handlers
   document.querySelectorAll('.nav-item').forEach(el => {
     el.addEventListener('click', () => {
+      if (el.classList.contains('disabled')) {
+        showToast('This feature is coming soon.');
+        return;
+      }
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       el.classList.add('active');
     });
   });
 });
 
-function closeDisclaimer() {
-  document.getElementById('disclaimerModal').style.display = 'none';
-}
-
 /* ══════════════════════════════════════════
    EXERCISE SELECT
    ══════════════════════════════════════════ */
 function populateExerciseSelect() {
-  const sel = document.getElementById('exerciseSelect');
-  for (const [id, ex] of Object.entries(EXERCISES)) {
-    const opt = document.createElement('option');
-    opt.value = id;
-    opt.textContent = ex.label;
-    sel.appendChild(opt);
+  ['exerciseSelect', 'onboardExercise'].forEach(selId => {
+    const sel = document.getElementById(selId);
+    if (!sel) return;
+    for (const [id, ex] of Object.entries(EXERCISES)) {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = ex.label;
+      sel.appendChild(opt);
+    }
+  });
+}
+
+/* ══════════════════════════════════════════
+   ONBOARDING
+   ══════════════════════════════════════════ */
+let onboardSelectedMode = 'sim';
+
+function onboardNext(step) {
+  document.getElementById('onboardStep' + step).style.display = 'none';
+  document.getElementById('onboardStep' + (step + 1)).style.display = 'block';
+  document.querySelectorAll('.onboard-dot').forEach((d, i) => {
+    d.classList.toggle('active', i <= step - 1);
+  });
+}
+
+function onboardBack(step) {
+  document.getElementById('onboardStep' + step).style.display = 'none';
+  document.getElementById('onboardStep' + (step - 1)).style.display = 'block';
+  document.querySelectorAll('.onboard-dot').forEach((d, i) => {
+    d.classList.toggle('active', i <= step - 3);
+  });
+}
+
+function selectOnboardMode(mode) {
+  onboardSelectedMode = mode;
+  document.getElementById('modeSimCard').classList.toggle('active', mode === 'sim');
+  document.getElementById('modeCamCard').classList.toggle('active', mode === 'cam');
+}
+
+function onboardFinish() {
+  const exercise = document.getElementById('onboardExercise').value || 'squat';
+  const mass     = parseFloat(document.getElementById('onboardMass').value) || 80;
+  const reps     = parseInt(document.getElementById('onboardReps').value) || 8;
+  const load     = document.getElementById('onboardLoad').value || 'Bodyweight';
+
+  sessionConfig.targetReps = reps;
+  sessionConfig.loadLabel  = load;
+  sim.subjectMassKg        = mass;
+
+  document.getElementById('targetRepsInput').value = reps;
+  document.getElementById('loadInput').value       = load;
+  setEl('sessionLoad',       load);
+  setEl('sessionTargetReps', reps);
+  setEl('statRepsDenom',     reps);
+
+  document.getElementById('exerciseSelect').value = exercise;
+  loadExercise(exercise);
+
+  document.getElementById('onboardModal').style.display = 'none';
+
+  if (onboardSelectedMode === 'cam') {
+    setTimeout(() => toggleCameraMode(true), 300);
   }
 }
 
