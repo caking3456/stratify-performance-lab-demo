@@ -752,24 +752,68 @@ select { font-family: inherit; }
 /* ══════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   MOBILE BOTTOM NAV
+   ══════════════════════════════════════════ */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-soft);
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bottom-nav-item {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.18s;
+  padding: 6px 4px;
+  border-top: 2px solid transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.bottom-nav-item span {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.bottom-nav-item.active {
+  color: var(--blue-light);
+  border-top-color: var(--blue);
+}
+.bottom-nav-item.disabled { opacity: 0.32; cursor: not-allowed; }
+.bottom-nav-item:not(.disabled):not(.active):active { color: var(--blue-light); }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
 @media (max-width: 1100px) {
   .grid-main { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
+  /* Layout: swap sidebar for bottom nav */
+  .sidebar        { display: none; }
+  .main           { margin-left: 0; }
+  .bottom-nav     { display: flex; }
+  .content        { padding: 16px; padding-bottom: calc(56px + 16px); }
+  /* Topbar: strip out elements that overflow on phones */
+  .topbar         { padding: 0 16px; }
+  .clinician-tag  { display: none; }
+  #simBadge       { display: none !important; }
+  /* Grids */
   .grid-3 { grid-template-columns: 1fr 1fr; }
   .grid-2 { grid-template-columns: 1fr; }
   .angle-grid { grid-template-columns: 1fr 1fr; }
-  .content { padding: 16px; }
-  .topbar  { padding: 0 16px; }
   #cameraPanel { height: min(370px, 45vh) !important; }
 }
 @media (max-width: 500px) {
   .grid-3 { grid-template-columns: 1fr; }
-  .tab {
-    padding: 7px 9px;
-    font-size: 10px;
-    letter-spacing: 0.04em;
-  }
+  .tab { padding: 7px 9px; font-size: 10px; letter-spacing: 0.04em; }
 }
 
 /* ── HEP Prescription ──────────────────────────────────────── */
