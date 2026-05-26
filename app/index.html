@@ -412,7 +412,7 @@
         <button class="tab active" onclick="switchTab(this, 'paneAnalysis')">Your Score</button>
         <button class="tab" onclick="switchTab(this, 'paneGraph')">Rep Quality</button>
         <button class="tab" onclick="switchTab(this, 'paneRecs')">Tips to Improve</button>
-        <button class="tab" onclick="switchTab(this, 'paneHep')">HEP Rx <span class="hep-badge" id="hepBadge" style="display:none">0</span></button>
+        <button class="tab" id="exercisesTab" onclick="switchTab(this, 'paneHep')">Exercises <span class="hep-badge" id="hepBadge" style="display:none">0</span></button>
       </div>
 
       <!-- AI Summary pane -->
@@ -443,13 +443,17 @@
         <div class="recs" id="recsContainer"></div>
       </div>
 
-      <!-- HEP Rx pane -->
+      <!-- Exercises pane -->
       <div id="paneHep" class="tab-pane">
+        <div class="hep-header" id="hepHeader" style="display:none;">
+          <p class="hep-intro">Based on your set, here are exercises to work on. Print or save as a take-home sheet.</p>
+          <button class="btn btn-print" onclick="printHEP()">🖨 Print Take-Home Sheet</button>
+        </div>
         <div id="hepContainer"></div>
         <div class="hep-disclaimer">
-          <strong>&#9888; Disclaimer:</strong> These AI-generated corrective exercise suggestions are for
-          educational purposes only and do not constitute medical advice, diagnosis, or treatment.
-          Always consult a licensed physical therapist or physician before beginning any exercise program.
+          <strong>&#9888; Disclaimer:</strong> These exercise suggestions are for educational purposes only
+          and do not constitute medical advice, diagnosis, or treatment. Always consult a licensed physical
+          therapist or physician before beginning any exercise program.
         </div>
       </div>
 

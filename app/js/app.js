@@ -21,7 +21,8 @@
 const sim = new BiomechanicsSimulation();
 
 let currentExerciseId = 'squat';
-let sessionConfig = { targetReps: 8, setNumber: 1, loadLabel: '185 lbs' };
+let sessionConfig     = { targetReps: 8, setNumber: 1, loadLabel: '185 lbs' };
+let lastPrescribedHEP = [];
 
 /* ══════════════════════════════════════════
    INIT
@@ -149,9 +150,12 @@ function loadExercise(id) {
 
   // Reset summary
   renderSummary(null);
-  // Clear HEP pane and badge
-  const hepCont = document.getElementById('hepContainer');
+  // Clear HEP pane, header, and badge
+  lastPrescribedHEP = [];
+  const hepCont   = document.getElementById('hepContainer');
   if (hepCont) hepCont.innerHTML = '';
+  const hepHeader = document.getElementById('hepHeader');
+  if (hepHeader) hepHeader.style.display = 'none';
   const hepBadgeEl = document.getElementById('hepBadge');
   if (hepBadgeEl) hepBadgeEl.style.display = 'none';
   // Reset clinical card to AI Summary tab
@@ -229,6 +233,11 @@ function stopAnalysis() {
     renderHEP(prescribeHEP(currentExerciseId, summary));
     sessionConfig.setNumber++;
     setEl('sessionSetNum', sessionConfig.setNumber);
+
+    // Surface the Exercises tab as primary output
+    const exercisesTab = document.getElementById('exercisesTab');
+    if (exercisesTab) switchTab(exercisesTab, 'paneHep');
+    showToast('Set complete — your personalized exercises are ready.');
   }
 }
 
@@ -698,14 +707,18 @@ function renderRecommendations(recs, highlight) {
 function renderHEP(drills) {
   const container = document.getElementById('hepContainer');
   const badge     = document.getElementById('hepBadge');
+  const header    = document.getElementById('hepHeader');
   if (!container) return;
 
   if (!drills || !drills.length) {
-    if (badge) badge.style.display = 'none';
+    if (badge)  badge.style.display = 'none';
+    if (header) header.style.display = 'none';
     return;
   }
 
-  if (badge) { badge.textContent = drills.length; badge.style.display = 'inline-flex'; }
+  lastPrescribedHEP = drills;
+  if (badge)  { badge.textContent = drills.length; badge.style.display = 'inline-flex'; }
+  if (header) header.style.display = 'flex';
 
   container.innerHTML = '<div class="hep-drills">' + drills.map((d, idx) => `
     <div class="hep-drill">
@@ -807,6 +820,77 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ══════════════════════════════════════════
+   PRINT TAKE-HOME SHEET
+   ══════════════════════════════════════════ */
+function printHEP() {
+  if (!lastPrescribedHEP.length) {
+    showToast('Complete a set first to generate your exercises.');
+    return;
+  }
+
+  const ex   = getExercise(currentExerciseId);
+  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const drillsHtml = lastPrescribedHEP.map((d, i) => `
+    <div style="margin-bottom:22px;padding:16px;border:1px solid #e0e0e0;border-radius:6px;page-break-inside:avoid;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#1E8FE1;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i + 1}</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#1a1a1a;">${d.name}</div>
+          <div style="font-size:11px;color:#1E8FE1;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${d.targetMuscle}</div>
+        </div>
+      </div>
+      <div style="display:inline-block;background:#f0f7ff;border-radius:4px;padding:4px 12px;font-size:13px;font-weight:600;color:#1565c0;margin-bottom:10px;">
+        ${d.sets} sets &times; ${d.reps}${d.side ? ' &mdash; ' + d.side : ''}
+      </div>
+      <div style="font-size:13px;color:#444;line-height:1.7;">${d.cue}</div>
+      ${d.evidence ? `<div style="font-size:11px;color:#888;font-style:italic;margin-top:8px;">${d.evidence}</div>` : ''}
+    </div>
+  `).join('');
+
+  const html = `<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <title>Movement Plan &mdash; ${ex.label}</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Georgia, serif; color: #1a1a1a; }
+      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style>
+  </head><body>
+    <div style="max-width:680px;margin:0 auto;padding:40px 32px;">
+      <div style="border-bottom:3px solid #1E8FE1;padding-bottom:16px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <div style="font-size:20px;font-weight:700;color:#1E8FE1;letter-spacing:0.05em;text-transform:uppercase;">Stratify Performance Lab</div>
+          <div style="font-size:13px;color:#666;margin-top:3px;">Movement Improvement Plan</div>
+        </div>
+        <div style="text-align:right;font-size:11px;color:#888;line-height:1.6;">
+          Dr. Chris King PT, DPT<br>B.S. Kinesiology
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:24px;font-size:12px;color:#555;background:#f8f8f8;padding:12px 16px;border-radius:4px;">
+        <div><strong>Exercise:</strong> ${ex.label}</div>
+        <div><strong>Date:</strong> ${date}</div>
+      </div>
+      <div style="background:#f0f7ff;border-left:4px solid #1E8FE1;padding:12px 16px;margin-bottom:28px;font-size:13px;color:#333;border-radius:0 4px 4px 0;line-height:1.6;">
+        Based on your movement analysis, here are exercises to work on. Perform these before or after your session, or on recovery days.
+      </div>
+      ${drillsHtml}
+      <div style="margin-top:28px;padding:12px 16px;border:1px solid #f0c060;background:#fffbf0;border-radius:4px;font-size:11px;color:#888;line-height:1.6;">
+        &#9888; <strong>Educational Use Only.</strong> These exercises are for informational purposes only and do not constitute medical advice, diagnosis, or treatment. Always consult a licensed physical therapist or physician before beginning any exercise program.
+      </div>
+      <div style="margin-top:16px;text-align:center;font-size:10px;color:#ccc;">Stratify Performance Lab &middot; ${date}</div>
+    </div>
+  </body></html>`;
+
+  const w = window.open('', '_blank', 'width=760,height=920');
+  if (!w) { showToast('Allow popups to open your take-home sheet.'); return; }
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 400);
 }
 
 /* ══════════════════════════════════════════
